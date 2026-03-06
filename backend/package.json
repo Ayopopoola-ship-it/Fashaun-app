@@ -1,0 +1,20 @@
+{
+  "name": "fashaun-backend-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "tsc -p tsconfig.json",
+    "ingest:shopify": "tsx scripts/ingest-shopify.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

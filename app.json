@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Fashaun V1",
+    "slug": "fashaun-v1",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
