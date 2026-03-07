@@ -9,7 +9,15 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["scripts", "lib", "types", "config"]
+  "include": [
+    "scripts",
+    "lib",
+    "types",
+    "config"
+  ],
+  "extends": "expo/tsconfig.base"
 }
