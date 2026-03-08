@@ -1,6 +1,7 @@
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
+import { registerPushTokenForUser } from '../services/pushNotifications';
 import { supabase } from '../services/supabaseClient';
 
 interface AuthContextValue {
@@ -40,6 +41,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
       subscription.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    registerPushTokenForUser(user.id).catch((error: unknown) => {
+      console.warn('Push token registration failed', error);
+    });
+  }, [user]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

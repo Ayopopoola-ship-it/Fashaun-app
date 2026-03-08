@@ -13,7 +13,9 @@
     "brands:enable": "tsx scripts/brands-enable.ts",
     "brands:disable": "tsx scripts/brands-disable.ts",
     "brands:set-source": "tsx scripts/brands-set-source.ts",
-    "ingest:brand": "tsx scripts/ingest-brand.ts"
+    "ingest:brand": "tsx scripts/ingest-brand.ts",
+    "alerts:new-drop": "tsx scripts/prepare-new-drop-alerts.ts",
+    "push:new-drop": "tsx scripts/send-new-drop-push.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",

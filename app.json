@@ -9,7 +9,14 @@
       "**/*"
     ],
     "plugins": [
-      "expo-asset"
-    ]
+      "expo-asset",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1492b649-b67b-4ad1-98a3-a5adef3d76e1"
+      }
+    },
+    "owner": "ayopopoola"
   }
 }
