@@ -1,10 +1,12 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { AppNavigator } from './app/navigation/AppNavigator';
 import { AuthNavigator } from './app/navigation/AuthNavigator';
 import { AuthProvider, useAuth } from './app/providers/AuthProvider';
+import { initializeAnalytics } from './app/services/analytics';
 import { theme } from './app/theme/theme';
 
 function RootNavigator() {
@@ -23,6 +25,10 @@ function RootNavigator() {
 }
 
 export default function App() {
+  useEffect(() => {
+    initializeAnalytics();
+  }, []);
+
   return (
     <AuthProvider>
       <NavigationContainer>

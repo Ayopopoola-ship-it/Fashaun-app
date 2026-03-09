@@ -131,9 +131,17 @@ export function HomeFeedScreen({ navigation }: Props) {
           <Text style={styles.title}>Home Feed</Text>
           <Text style={styles.subtitle}>Newest drops from brands you follow.</Text>
         </View>
-        <Pressable style={styles.signOutButton} onPress={() => signOut()}>
-          <Text style={styles.signOutButtonText}>Sign Out</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('PurchaseHistory')}
+          >
+            <Text style={styles.historyButtonText}>History</Text>
+          </Pressable>
+          <Pressable style={styles.signOutButton} onPress={() => signOut()}>
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
+          </Pressable>
+        </View>
       </View>
 
       {loadingInitial ? (
@@ -209,6 +217,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 2,
+    letterSpacing: -0.4,
   },
   subtitle: {
     fontSize: theme.typography.caption,
@@ -218,14 +227,31 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 8,
+    borderRadius: theme.radius.md,
+    minHeight: 40,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    justifyContent: 'center',
   },
   signOutButtonText: {
     color: theme.colors.text,
     fontSize: theme.typography.caption,
     fontWeight: '600',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  historyButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radius.md,
+    minHeight: 40,
+    paddingHorizontal: theme.spacing.md,
+    justifyContent: 'center',
+  },
+  historyButtonText: {
+    color: theme.colors.surface,
+    fontSize: theme.typography.caption,
+    fontWeight: '700',
   },
   centerState: {
     flex: 1,
@@ -268,18 +294,18 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.md,
+    gap: theme.spacing.smd,
   },
   card: {
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 16,
+    borderRadius: theme.radius.lg,
     overflow: 'hidden',
   },
   imageWrap: {
     height: 220,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
     width: '100%',
@@ -320,9 +346,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 10,
-    paddingVertical: theme.spacing.md,
+    borderRadius: theme.radius.md,
+    minHeight: theme.button.height,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   loadMoreButtonText: {
     color: theme.colors.text,

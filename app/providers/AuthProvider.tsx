@@ -1,6 +1,7 @@
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
+import { identifyAnalyticsUser, resetAnalytics, trackAnalyticsEvent } from '../services/analytics';
 import { registerPushTokenForUser } from '../services/pushNotifications';
 import { supabase } from '../services/supabaseClient';
 
@@ -31,10 +32,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setLoading(false);
       });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       setLoading(false);
+
+      if (event === 'SIGNED_IN' && nextSession?.user) {
+        identifyAnalyticsUser(nextSession.user.id, {
+          email: nextSession.user.email ?? null,
+        });
+        trackAnalyticsEvent('sign_in', {
+          user_id: nextSession.user.id,
+          method: 'supabase_auth',
+        });
+      }
+
+      if (event === 'SIGNED_OUT') {
+        resetAnalytics();
+      }
     });
 
     return () => {
@@ -80,6 +95,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         if (error) {
           throw new Error(error.message);
         }
+        resetAnalytics();
       },
     }),
     [loading, session, user]

@@ -67,11 +67,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: theme.spacing.smd,
   },
   topButton: {
     minWidth: 56,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 40,
   },
   topButtonText: {
     color: theme.colors.primary,
@@ -98,9 +100,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: theme.spacing.md,
     bottom: theme.spacing.xl,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 60,
+    height: 60,
+    borderRadius: theme.radius.pill,
     backgroundColor: '#020617',
     alignItems: 'center',
     justifyContent: 'center',
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
   },
   floatingCloseButtonText: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
   },
 });

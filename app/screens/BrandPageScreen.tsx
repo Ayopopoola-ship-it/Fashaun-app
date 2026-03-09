@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
   },
   centerStateText: {
     marginTop: theme.spacing.sm,
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 14,
+    borderRadius: theme.radius.lg,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
@@ -238,9 +239,10 @@ const styles = StyleSheet.create({
   followButton: {
     alignSelf: 'flex-start',
     backgroundColor: theme.colors.primary,
-    borderRadius: 8,
+    borderRadius: theme.radius.md,
+    minHeight: 40,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
+    justifyContent: 'center',
   },
   followButtonActive: {
     backgroundColor: '#DBEAFE',
@@ -255,18 +257,18 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.md,
+    gap: theme.spacing.smd,
   },
   productCard: {
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 14,
+    borderRadius: theme.radius.lg,
     overflow: 'hidden',
   },
   productImageWrap: {
     height: 180,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: theme.colors.surfaceMuted,
   },
   productImage: {
     width: '100%',

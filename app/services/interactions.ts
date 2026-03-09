@@ -1,3 +1,4 @@
+import { trackAnalyticsEvent } from './analytics';
 import { supabase } from './supabaseClient';
 
 export type CoreProductEvent = 'product_view' | 'product_click' | 'product_save' | 'buy_click';
@@ -23,6 +24,12 @@ const interactionTypeByEvent: Record<CoreProductEvent, 'view' | 'click' | 'save'
   product_click: 'click',
   product_save: 'save',
   buy_click: 'purchase',
+};
+
+const analyticsEventByInteraction: Partial<Record<CoreProductEvent, 'product_viewed' | 'product_saved' | 'buy_clicked'>> = {
+  product_view: 'product_viewed',
+  product_save: 'product_saved',
+  buy_click: 'buy_clicked',
 };
 
 const recentEvents = new Map<string, number>();
@@ -62,5 +69,15 @@ export async function trackProductEvent(input: TrackProductEventInput): Promise<
 
   if (error) {
     throw new Error(`Failed to track ${event}: ${error.message}`);
+  }
+
+  const analyticsEvent = analyticsEventByInteraction[event];
+  if (analyticsEvent) {
+    trackAnalyticsEvent(analyticsEvent, {
+      user_id: userId,
+      brand_id: brandId,
+      product_id: productId,
+      ...(metadata ?? {}),
+    });
   }
 }

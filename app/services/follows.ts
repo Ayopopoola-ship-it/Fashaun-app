@@ -1,3 +1,4 @@
+import { trackAnalyticsEvent } from './analytics';
 import { supabase } from './supabaseClient';
 
 interface FollowBrandInput {
@@ -34,6 +35,11 @@ export async function followBrand(input: FollowBrandInput): Promise<void> {
   if (error) {
     throw new Error(`Failed to follow brand: ${error.message}`);
   }
+
+  trackAnalyticsEvent('brand_followed', {
+    user_id: userId,
+    brand_id: brandId,
+  });
 }
 
 export async function unfollowBrand(input: FollowBrandInput): Promise<void> {
