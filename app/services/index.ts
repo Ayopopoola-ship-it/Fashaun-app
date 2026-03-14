@@ -7,4 +7,5 @@ export * from './pushNotifications';
 export * from './purchaseHistory';
 export * from './products';
 export * from './saves';
+export * from './saved';
 export * from './supabaseClient';

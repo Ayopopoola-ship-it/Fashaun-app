@@ -12,6 +12,25 @@ interface UnsaveProductInput {
   productId: string;
 }
 
+export async function fetchSavedProductIds(userId: string, productIds: string[]): Promise<string[]> {
+  if (productIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('user_interactions')
+    .select('product_id')
+    .eq('user_id', userId)
+    .eq('interaction_type', 'save')
+    .in('product_id', productIds);
+
+  if (error) {
+    throw new Error(`Failed to fetch saved products: ${error.message}`);
+  }
+
+  return Array.from(new Set((data ?? []).map((row: { product_id: string }) => row.product_id)));
+}
+
 export async function isProductSaved(input: UnsaveProductInput): Promise<boolean> {
   const { data, error } = await supabase
     .from('user_interactions')

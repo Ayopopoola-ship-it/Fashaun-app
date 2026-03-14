@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import { HeartButton } from '../components/HeartButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
@@ -206,7 +207,10 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
           )}
 
           <Text style={styles.brandName}>{product.brand_name}</Text>
-          <Text style={styles.productName}>{product.name}</Text>
+          <View style={styles.productNameRow}>
+            <Text style={styles.productName}>{product.name}</Text>
+            <HeartButton active={saved} onPress={() => void onSavePress()} />
+          </View>
           <Text style={styles.priceText}>{formatPrice(product.price_amount, product.currency_code)}</Text>
 
           {product.sizes.length > 0 ? (
@@ -228,15 +232,6 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
               <Text style={styles.descriptionText}>{product.description}</Text>
             </View>
           ) : null}
-
-          <Pressable
-            style={[styles.saveButton, saved ? styles.saveButtonActive : undefined]}
-            onPress={() => void onSavePress()}
-          >
-            <Text style={[styles.saveButtonText, saved ? styles.saveButtonTextActive : undefined]}>
-              {saved ? 'Saved' : 'Save Product'}
-            </Text>
-          </Pressable>
 
           <Pressable
             style={[styles.buyButton, !product.product_url ? styles.buyButtonDisabled : undefined]}
@@ -320,6 +315,12 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.heading,
     fontWeight: '700',
+    flex: 1,
+    marginRight: theme.spacing.sm,
+  },
+  productNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: theme.spacing.xs,
   },
   priceText: {
@@ -376,27 +377,5 @@ const styles = StyleSheet.create({
     color: theme.colors.surface,
     fontSize: theme.typography.body,
     fontWeight: '700',
-  },
-  saveButton: {
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
-  },
-  saveButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  saveButtonTextActive: {
-    color: theme.colors.surface,
   },
 });

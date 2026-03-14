@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { HeartButton } from '../components/HeartButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
@@ -132,21 +133,17 @@ export function BrandPageScreen({ route, navigation }: Props) {
       ) : brand ? (
         <>
           <View style={styles.headerCard}>
-            <Text style={styles.brandName}>{brand.name}</Text>
-            <Text style={styles.brandMeta}>{brand.domain}</Text>
-            <Pressable
-              style={[styles.followButton, isFollowing ? styles.followButtonActive : undefined]}
-              onPress={() => void toggleFollow()}
-              disabled={updatingFollow}
-            >
+            <View style={styles.brandHeaderRow}>
+              <View style={styles.brandHeaderTextWrap}>
+                <Text style={styles.brandName}>{brand.name}</Text>
+                <Text style={styles.brandMeta}>{brand.domain}</Text>
+              </View>
               {updatingFollow ? (
-                <ActivityIndicator color={isFollowing ? theme.colors.text : theme.colors.surface} />
+                <ActivityIndicator color={theme.colors.primary} />
               ) : (
-                <Text style={[styles.followButtonText, isFollowing ? styles.followButtonTextActive : undefined]}>
-                  {isFollowing ? 'Following' : 'Follow'}
-                </Text>
+                <HeartButton active={isFollowing} onPress={() => void toggleFollow()} />
               )}
-            </Pressable>
+            </View>
           </View>
 
           {products.length === 0 ? (
@@ -225,6 +222,15 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
+  brandHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  brandHeaderTextWrap: {
+    flexShrink: 1,
+    paddingRight: theme.spacing.md,
+  },
   brandName: {
     fontSize: theme.typography.heading,
     color: theme.colors.text,
@@ -234,26 +240,6 @@ const styles = StyleSheet.create({
   brandMeta: {
     fontSize: theme.typography.caption,
     color: theme.colors.textMuted,
-    marginBottom: theme.spacing.md,
-  },
-  followButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: 40,
-    paddingHorizontal: theme.spacing.lg,
-    justifyContent: 'center',
-  },
-  followButtonActive: {
-    backgroundColor: '#DBEAFE',
-  },
-  followButtonText: {
-    color: theme.colors.surface,
-    fontSize: theme.typography.caption,
-    fontWeight: '700',
-  },
-  followButtonTextActive: {
-    color: theme.colors.primary,
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
