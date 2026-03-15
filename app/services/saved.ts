@@ -7,6 +7,7 @@ export interface SavedProductItem {
   brandName: string;
   productName: string;
   productImageUrl: string | null;
+  productUrl: string | null;
   priceAmount: number | null;
   currencyCode: string;
   savedAt: string;
@@ -58,7 +59,7 @@ export async function fetchSavedProducts(userId: string): Promise<SavedProductIt
     await Promise.all([
       supabase
         .from('products')
-        .select('id, name, image_urls, price_amount, currency_code')
+        .select('id, name, image_urls, product_url, price_amount, currency_code')
         .in('id', productIds),
       supabase.from('brands').select('id, name').in('id', brandIds),
     ]);
@@ -91,6 +92,7 @@ export async function fetchSavedProducts(userId: string): Promise<SavedProductIt
         brandName: brandNameById.get(row.brand_id) ?? 'Unknown Brand',
         productName: product.name,
         productImageUrl: product.image_urls?.[0] ?? null,
+        productUrl: product.product_url ?? null,
         priceAmount: product.price_amount,
         currencyCode: product.currency_code,
         savedAt: row.created_at,

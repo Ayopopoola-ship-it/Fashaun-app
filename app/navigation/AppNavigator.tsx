@@ -1,8 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DrawerContentScrollView, DrawerItem, createDrawerNavigator } from '@react-navigation/drawer';
-import { DrawerActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../providers/AuthProvider';
 import { BrandPageScreen } from '../screens/BrandPageScreen';
@@ -19,7 +17,9 @@ import { TrendingScreen } from '../screens/TrendingScreen';
 import { theme } from '../theme/theme';
 
 export type RootStackParamList = {
-  MainApp: undefined;
+  MainTabs: undefined;
+  SideMenu: undefined;
+  History: undefined;
   Onboarding: undefined;
   HomeFeed: undefined;
   BrandSelection: undefined;
@@ -37,14 +37,16 @@ export type MainTabParamList = {
   Cart: undefined;
 };
 
-type AppDrawerParamList = {
-  MainTabs: undefined;
-  History: undefined;
-};
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
-const Drawer = createDrawerNavigator<AppDrawerParamList>();
+
+function HeaderMenuButton({ navigation }: { navigation: any }) {
+  return (
+    <Pressable style={styles.menuButtonWrap} onPress={() => navigation.navigate('SideMenu')}>
+      <Text style={styles.menuButton}>Menu</Text>
+    </Pressable>
+  );
+}
 
 function MainTabsNavigator() {
   return (
@@ -56,14 +58,7 @@ function MainTabsNavigator() {
           backgroundColor: theme.colors.surface,
         },
         headerShadowVisible: false,
-        headerLeft: () => (
-          <Text
-            style={styles.menuButton}
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          >
-            Menu
-          </Text>
-        ),
+        headerLeft: () => <HeaderMenuButton navigation={navigation} />,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
@@ -89,76 +84,51 @@ function MainTabsNavigator() {
   );
 }
 
-function AppDrawerContent(props: any) {
+function SideMenuScreen({ navigation }: { navigation: any }) {
   const { signOut } = useAuth();
-  const activeRouteName = props.state?.routeNames?.[props.state?.index] ?? 'MainTabs';
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContent}>
-      <DrawerItem
-        label="History"
-        focused={activeRouteName === 'History'}
-        onPress={() => props.navigation.navigate('History')}
-        labelStyle={styles.drawerItemLabel}
-      />
-      <View style={styles.drawerDivider} />
-      <DrawerItem
-        label="Sign Out"
+    <View style={styles.sideMenuContainer}>
+      <Pressable
+        style={styles.sideMenuItem}
         onPress={() => {
+          navigation.goBack();
+          navigation.navigate('History');
+        }}
+      >
+        <Text style={styles.sideMenuItemText}>History</Text>
+      </Pressable>
+      <Pressable
+        style={styles.sideMenuItem}
+        onPress={() => {
+          navigation.goBack();
           void signOut();
         }}
-        labelStyle={styles.drawerSignOutLabel}
-      />
-    </DrawerContentScrollView>
-  );
-}
-
-function AppDrawerNavigator() {
-  return (
-    <Drawer.Navigator
-      drawerContent={(props) => <AppDrawerContent {...props} />}
-      screenOptions={{
-        drawerActiveTintColor: theme.colors.primary,
-        drawerInactiveTintColor: theme.colors.text,
-        drawerLabelStyle: {
-          fontSize: theme.typography.body,
-        },
-      }}
-    >
-      <Drawer.Screen
-        name="MainTabs"
-        component={MainTabsNavigator}
-        options={{ title: 'Discovery', headerShown: false }}
-      />
-      <Drawer.Screen
-        name="History"
-        component={PurchaseHistoryScreen}
-        options={({ navigation }) => ({
-          title: 'History',
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <Text
-              style={styles.menuButton}
-              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            >
-              Menu
-            </Text>
-          ),
-        })}
-      />
-    </Drawer.Navigator>
+      >
+        <Text style={styles.sideMenuItemText}>Sign Out</Text>
+      </Pressable>
+    </View>
   );
 }
 
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="MainApp"
+      initialRouteName="MainTabs"
       screenOptions={{
         headerTitleAlign: 'center',
       }}
     >
-      <Stack.Screen name="MainApp" component={AppDrawerNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="MainTabs" component={MainTabsNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="SideMenu" component={SideMenuScreen} options={{ title: 'Menu' }} />
+      <Stack.Screen
+        name="History"
+        component={PurchaseHistoryScreen}
+        options={({ navigation }) => ({
+          title: 'History',
+          headerLeft: () => <HeaderMenuButton navigation={navigation} />,
+        })}
+      />
 
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ title: 'Welcome' }} />
       <Stack.Screen name="HomeFeed" component={HomeFeedScreen} options={{ title: 'Discovery' }} />
@@ -180,25 +150,28 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontSize: theme.typography.caption,
     fontWeight: '700',
+  },
+  menuButtonWrap: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
   },
-  drawerContent: {
+  sideMenuContainer: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.md,
   },
-  drawerDivider: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.sm,
+  sideMenuItem: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    minHeight: theme.button.height,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
-  drawerSignOutLabel: {
-    color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '600',
-  },
-  drawerItemLabel: {
+  sideMenuItemText: {
     color: theme.colors.text,
     fontSize: theme.typography.body,
     fontWeight: '600',

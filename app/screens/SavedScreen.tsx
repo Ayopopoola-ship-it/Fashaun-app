@@ -2,6 +2,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -14,6 +15,7 @@ import {
 import { HeartButton } from '../components/HeartButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { useAuth } from '../providers/AuthProvider';
+import { addToCart, fetchCartProductIds } from '../services/cart';
 import { unfollowBrand } from '../services/follows';
 import { unsaveProduct } from '../services/saves';
 import { fetchSavedBrands, fetchSavedProducts, SavedBrandItem, SavedProductItem } from '../services/saved';
@@ -44,6 +46,7 @@ export function SavedScreen() {
   const [activeTab, setActiveTab] = useState<SavedTab>('products');
   const [products, setProducts] = useState<SavedProductItem[]>([]);
   const [brands, setBrands] = useState<SavedBrandItem[]>([]);
+  const [cartProductIds, setCartProductIds] = useState<string[]>([]);
 
   const [productSearch, setProductSearch] = useState('');
   const [brandSearch, setBrandSearch] = useState('');
@@ -63,13 +66,15 @@ export function SavedScreen() {
     setError(null);
 
     try {
-      const [savedProducts, savedBrands] = await Promise.all([
+      const [savedProducts, savedBrands, cartIds] = await Promise.all([
         fetchSavedProducts(user.id),
         fetchSavedBrands(user.id),
+        fetchCartProductIds(user.id),
       ]);
 
       setProducts(savedProducts);
       setBrands(savedBrands);
+      setCartProductIds(cartIds);
     } catch (loadError: unknown) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load saved items');
     } finally {
@@ -135,6 +140,40 @@ export function SavedScreen() {
     }
   }
 
+  async function onAddToCart(item: SavedProductItem): Promise<void> {
+    if (!user) {
+      return;
+    }
+
+    if (cartProductIds.includes(item.productId)) {
+      return;
+    }
+
+    try {
+      await addToCart(user.id, {
+        productId: item.productId,
+        brandId: item.brandId,
+        brandName: item.brandName,
+        productName: item.productName,
+        productImageUrl: item.productImageUrl,
+        productUrl: item.productUrl,
+        priceAmount: item.priceAmount,
+        currencyCode: item.currencyCode,
+      });
+
+      setCartProductIds((prev) => {
+        if (prev.includes(item.productId)) {
+          return prev;
+        }
+        return [...prev, item.productId];
+      });
+
+      Alert.alert('Added to Cart', `${item.productName} has been added to your cart.`);
+    } catch (cartError: unknown) {
+      setError(cartError instanceof Error ? cartError.message : 'Failed to add item to cart');
+    }
+  }
+
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
@@ -194,11 +233,14 @@ export function SavedScreen() {
               keyExtractor={(item) => item.productId}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.listContent}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={styles.card}
-                  onPress={() => navigation.navigate('ProductDetails', { productId: item.productId })}
-                >
+              renderItem={({ item }) => {
+                const inCart = cartProductIds.includes(item.productId);
+
+                return (
+                  <Pressable
+                    style={styles.card}
+                    onPress={() => navigation.navigate('ProductDetails', { productId: item.productId })}
+                  >
                   <View style={styles.imageWrap}>
                     {item.productImageUrl ? (
                       <Image source={{ uri: item.productImageUrl }} style={styles.image} resizeMode="cover" />
@@ -219,10 +261,25 @@ export function SavedScreen() {
                       <HeartButton active onPress={() => void onUnsaveProduct(item)} />
                     </View>
                     <Text style={styles.productName}>{item.productName}</Text>
-                    <Text style={styles.priceText}>{formatPrice(item.priceAmount, item.currencyCode)}</Text>
+                    <View style={styles.productRow}>
+                      <Text style={styles.priceText}>{formatPrice(item.priceAmount, item.currencyCode)}</Text>
+                      <Pressable
+                        style={[styles.cartButton, inCart ? styles.cartButtonAdded : undefined]}
+                        disabled={inCart}
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          void onAddToCart(item);
+                        }}
+                      >
+                        <Text style={[styles.cartButtonText, inCart ? styles.cartButtonTextAdded : undefined]}>
+                          {inCart ? 'In Cart' : 'Add to Cart'}
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
                 </Pressable>
-              )}
+                );
+              }}
             />
           )}
         </>
@@ -433,6 +490,32 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.caption,
     fontWeight: '600',
+  },
+  productRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+  },
+  cartButton: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.pill,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
+    backgroundColor: theme.colors.surface,
+  },
+  cartButtonAdded: {
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F3F4F6',
+  },
+  cartButtonText: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  cartButtonTextAdded: {
+    color: theme.colors.textMuted,
   },
   brandListContent: {
     paddingBottom: theme.spacing.xl,

@@ -1,5 +1,6 @@
 export * from './analytics';
 export * from './brands';
+export * from './cart';
 export * from './feed';
 export * from './follows';
 export * from './interactions';

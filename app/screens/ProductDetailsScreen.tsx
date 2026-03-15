@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -15,6 +16,7 @@ import { HeartButton } from '../components/HeartButton';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
+import { addToCart, fetchCartProductIds } from '../services/cart';
 import { trackProductEvent } from '../services/interactions';
 import { fetchProductDetailsById, ProductDetailsItem } from '../services/products';
 import { isProductSaved, saveProduct, unsaveProduct } from '../services/saves';
@@ -47,6 +49,8 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [openingLink, setOpeningLink] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [inCart, setInCart] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const loadProduct = useCallback(async () => {
     setLoading(true);
@@ -86,6 +90,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
   useEffect(() => {
     if (!user || !product) {
       setSaved(false);
+      setInCart(false);
       return;
     }
 
@@ -104,6 +109,19 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
       } catch {
         if (active) {
           setSaved(false);
+        }
+      }
+    })();
+
+    void (async () => {
+      try {
+        const cartIds = await fetchCartProductIds(user.id);
+        if (active) {
+          setInCart(cartIds.includes(product.id));
+        }
+      } catch {
+        if (active) {
+          setInCart(false);
         }
       }
     })();
@@ -174,6 +192,33 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
     }
   }
 
+  async function onAddToCartPress(): Promise<void> {
+    if (!user || !product || inCart) {
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      await addToCart(user.id, {
+        productId: product.id,
+        brandId: product.brand_id,
+        brandName: product.brand_name,
+        productName: product.name,
+        productImageUrl: product.image_urls?.[0] ?? null,
+        productUrl: product.product_url,
+        priceAmount: product.price_amount,
+        currencyCode: product.currency_code,
+      });
+      setInCart(true);
+      Alert.alert('Added to Cart', `${product.name} has been added to your cart.`);
+    } catch {
+      setError('Unable to add this item to cart right now.');
+    } finally {
+      setAddingToCart(false);
+    }
+  }
+
   return (
     <ScreenContainer>
       {loading ? (
@@ -232,6 +277,20 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
               <Text style={styles.descriptionText}>{product.description}</Text>
             </View>
           ) : null}
+
+          <Pressable
+            style={[styles.cartButton, inCart ? styles.cartButtonInCart : undefined]}
+            onPress={() => void onAddToCartPress()}
+            disabled={addingToCart || inCart}
+          >
+            {addingToCart ? (
+              <ActivityIndicator color={theme.colors.text} />
+            ) : (
+              <Text style={[styles.cartButtonText, inCart ? styles.cartButtonTextInCart : undefined]}>
+                {inCart ? 'In Cart' : 'Add to Cart'}
+              </Text>
+            )}
+          </Pressable>
 
           <Pressable
             style={[styles.buyButton, !product.product_url ? styles.buyButtonDisabled : undefined]}
@@ -361,6 +420,28 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: theme.typography.body,
     lineHeight: 22,
+  },
+  cartButton: {
+    marginTop: theme.spacing.sm,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    minHeight: theme.button.height,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cartButtonInCart: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#D1D5DB',
+  },
+  cartButtonText: {
+    color: theme.colors.text,
+    fontSize: theme.typography.body,
+    fontWeight: '700',
+  },
+  cartButtonTextInCart: {
+    color: theme.colors.textMuted,
   },
   buyButton: {
     marginTop: theme.spacing.md,
