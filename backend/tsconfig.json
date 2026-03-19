@@ -18,6 +18,5 @@
     "lib",
     "types",
     "config"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }

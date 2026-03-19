@@ -1,12 +1,12 @@
 export const spacing = {
-  xxs: 2,
+  xxs: 3,
   xs: 4,
-  sm: 8,
-  smd: 12,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 40,
+  sm: 10,
+  smd: 14,
+  md: 18,
+  lg: 26,
+  xl: 36,
+  xxl: 48,
 } as const;
 
 export type AppSpacing = typeof spacing;

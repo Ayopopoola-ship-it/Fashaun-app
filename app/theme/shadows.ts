@@ -4,25 +4,25 @@ export const shadows = {
   none: {},
   sm: Platform.select({
     ios: {
-      shadowColor: '#101828',
-      shadowOpacity: 0.05,
-      shadowRadius: 6,
-      shadowOffset: { width: 0, height: 2 },
+      shadowColor: '#161A18',
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
     },
     android: {
-      elevation: 2,
+      elevation: 1,
     },
     default: {},
   }),
   md: Platform.select({
     ios: {
-      shadowColor: '#101828',
-      shadowOpacity: 0.08,
-      shadowRadius: 14,
-      shadowOffset: { width: 0, height: 6 },
+      shadowColor: '#161A18',
+      shadowOpacity: 0.06,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 8 },
     },
     android: {
-      elevation: 5,
+      elevation: 3,
     },
     default: {},
   }),

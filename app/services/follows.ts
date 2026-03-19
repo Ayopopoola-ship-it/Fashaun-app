@@ -36,7 +36,7 @@ export async function followBrand(input: FollowBrandInput): Promise<void> {
     throw new Error(`Failed to follow brand: ${error.message}`);
   }
 
-  trackAnalyticsEvent('brand_followed', {
+  trackAnalyticsEvent('brand_follow', {
     user_id: userId,
     brand_id: brandId,
   });

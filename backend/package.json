@@ -9,6 +9,7 @@
     "ingest:shopify": "tsx scripts/ingest-shopify.ts",
     "runner:shopify": "tsx scripts/run-shopify-ingestion.ts",
     "seed:brands": "tsx scripts/seed-brands.ts",
+    "import:catalog": "tsx scripts/import-catalog.ts",
     "brands:list": "tsx scripts/brands-list.ts",
     "brands:enable": "tsx scripts/brands-enable.ts",
     "brands:disable": "tsx scripts/brands-disable.ts",

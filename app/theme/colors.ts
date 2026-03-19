@@ -1,24 +1,26 @@
 export const colors = {
-  background: '#F5F7FA',
+  background: '#FAF9F7',
   surface: '#FFFFFF',
-  surfaceMuted: '#EEF2F7',
-  text: '#111827',
-  textMuted: '#667085',
-  primary: '#1D4ED8',
-  border: '#E4E7EC',
+  surfaceMuted: '#F3F4F1',
+  text: '#1F2321',
+  textMuted: '#6C716D',
+  primary: '#2F3331',
+  border: '#E5E4E0',
+  accent: '#6C5C4D',
+  accentSoft: '#EFEAE4',
 
   // Extended neutrals for future UI usage.
-  neutral950: '#0A0D14',
-  neutral900: '#101828',
-  neutral700: '#344054',
-  neutral500: '#667085',
-  neutral300: '#D0D5DD',
-  neutral200: '#EAECF0',
-  neutral100: '#F2F4F7',
-  neutral50: '#F9FAFB',
+  neutral950: '#171A18',
+  neutral900: '#232826',
+  neutral700: '#4A504D',
+  neutral500: '#767C79',
+  neutral300: '#BCC0BD',
+  neutral200: '#DADDD9',
+  neutral100: '#F0F1EE',
+  neutral50: '#F8F7F4',
 
-  success: '#027A48',
-  error: '#B42318',
+  success: '#3A5A40',
+  error: '#9A3B33',
 } as const;
 
 export type AppColors = typeof colors;

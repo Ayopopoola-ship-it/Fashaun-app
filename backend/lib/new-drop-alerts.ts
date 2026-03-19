@@ -114,8 +114,10 @@ async function loadFollowsForBrands(brandIds: string[]): Promise<FollowRow[]> {
 export async function prepareNewDropAlerts(
   input: PrepareNewDropAlertsInput
 ): Promise<PrepareNewDropAlertsResult> {
-  const sinceMinutes = Number.isFinite(input.sinceMinutes) ? Math.max(1, Math.floor(input.sinceMinutes)) : 60;
-  const productLimit = Number.isFinite(input.productLimit) ? Math.max(1, Math.floor(input.productLimit)) : 500;
+  const sinceMinutesRaw = input.sinceMinutes ?? 60;
+  const productLimitRaw = input.productLimit ?? 500;
+  const sinceMinutes = Number.isFinite(sinceMinutesRaw) ? Math.max(1, Math.floor(sinceMinutesRaw)) : 60;
+  const productLimit = Number.isFinite(productLimitRaw) ? Math.max(1, Math.floor(productLimitRaw)) : 500;
   const sinceIso = new Date(Date.now() - sinceMinutes * 60_000).toISOString();
   const domainFilters = (input.domains ?? []).map((domain) => domain.trim().toLowerCase()).filter(Boolean);
 

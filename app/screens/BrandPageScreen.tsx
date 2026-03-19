@@ -2,8 +2,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { EmptyState } from '../components/EmptyState';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SectionLabel } from '../components/SectionLabel';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchBrandById } from '../services/brands';
@@ -119,10 +122,7 @@ export function BrandPageScreen({ route, navigation }: Props) {
   return (
     <ScreenContainer>
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerStateText}>Loading brand...</Text>
-        </View>
+        <LoadingState label="Loading brand" />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -135,6 +135,7 @@ export function BrandPageScreen({ route, navigation }: Props) {
           <View style={styles.headerCard}>
             <View style={styles.brandHeaderRow}>
               <View style={styles.brandHeaderTextWrap}>
+                <SectionLabel>Fashion House</SectionLabel>
                 <Text style={styles.brandName}>{brand.name}</Text>
                 <Text style={styles.brandMeta}>{brand.domain}</Text>
               </View>
@@ -148,8 +149,7 @@ export function BrandPageScreen({ route, navigation }: Props) {
 
           {products.length === 0 ? (
             <View style={styles.centerState}>
-              <Text style={styles.emptyTitle}>No products available</Text>
-              <Text style={styles.emptySubtitle}>This brand has no active products yet.</Text>
+              <EmptyState title="No products available" subtitle="This brand has no active products yet." />
             </View>
           ) : (
             <FlatList
@@ -198,14 +198,14 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.caption,
   },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
   },
   retryButton: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 8,
+    borderRadius: theme.radius.sm,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
   },
@@ -283,15 +283,5 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.caption,
     fontWeight: '600',
-  },
-  emptyTitle: {
-    color: theme.colors.text,
-    fontSize: theme.typography.heading,
-    fontWeight: '700',
-    marginBottom: theme.spacing.xs,
-  },
-  emptySubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.body,
   },
 });

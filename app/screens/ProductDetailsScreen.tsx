@@ -1,7 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -12,8 +11,11 @@ import {
   View,
 } from 'react-native';
 
+import { AppButton } from '../components/AppButton';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SectionLabel } from '../components/SectionLabel';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
 import { addToCart, fetchCartProductIds } from '../services/cart';
@@ -222,10 +224,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
   return (
     <ScreenContainer>
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerText}>Loading product...</Text>
-        </View>
+        <LoadingState label="Loading product" />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -251,7 +250,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
             </View>
           )}
 
-          <Text style={styles.brandName}>{product.brand_name}</Text>
+          <SectionLabel>{product.brand_name}</SectionLabel>
           <View style={styles.productNameRow}>
             <Text style={styles.productName}>{product.name}</Text>
             <HeartButton active={saved} onPress={() => void onSavePress()} />
@@ -260,7 +259,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
 
           {product.sizes.length > 0 ? (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Available Sizes</Text>
+            <SectionLabel>Available Sizes</SectionLabel>
               <View style={styles.sizeWrap}>
                 {product.sizes.map((size) => (
                   <View key={size} style={styles.sizeChip}>
@@ -273,36 +272,29 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
 
           {product.description ? (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
+              <SectionLabel>Description</SectionLabel>
               <Text style={styles.descriptionText}>{product.description}</Text>
             </View>
           ) : null}
 
-          <Pressable
-            style={[styles.cartButton, inCart ? styles.cartButtonInCart : undefined]}
-            onPress={() => void onAddToCartPress()}
-            disabled={addingToCart || inCart}
-          >
-            {addingToCart ? (
-              <ActivityIndicator color={theme.colors.text} />
-            ) : (
-              <Text style={[styles.cartButtonText, inCart ? styles.cartButtonTextInCart : undefined]}>
-                {inCart ? 'In Cart' : 'Add to Cart'}
-              </Text>
-            )}
-          </Pressable>
-
-          <Pressable
-            style={[styles.buyButton, !product.product_url ? styles.buyButtonDisabled : undefined]}
-            onPress={() => void onBuyPress()}
-            disabled={!product.product_url || openingLink}
-          >
-            {openingLink ? (
-              <ActivityIndicator color={theme.colors.surface} />
-            ) : (
-              <Text style={styles.buyButtonText}>Buy on Brand Site</Text>
-            )}
-          </Pressable>
+          <View style={styles.ctaWrap}>
+            <AppButton
+              label={inCart ? 'In Cart' : 'Add to Cart'}
+              onPress={() => void onAddToCartPress()}
+              loading={addingToCart}
+              disabled={inCart}
+              variant={inCart ? 'secondary' : 'primary'}
+            />
+          </View>
+          <View style={styles.ctaWrap}>
+            <AppButton
+              label="Buy on Brand Site"
+              onPress={() => void onBuyPress()}
+              disabled={!product.product_url}
+              loading={openingLink}
+              variant="secondary"
+            />
+          </View>
         </ScrollView>
       ) : null}
     </ScreenContainer>
@@ -316,20 +308,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
-  centerText: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
-  },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
   },
   retryButton: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 8,
+    borderRadius: theme.radius.sm,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
   },
@@ -363,13 +350,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: theme.typography.caption,
   },
-  brandName: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
   productName: {
     color: theme.colors.text,
     fontSize: theme.typography.heading,
@@ -390,13 +370,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: theme.spacing.md,
-  },
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: theme.typography.caption,
-    fontWeight: '700',
-    marginBottom: theme.spacing.sm,
-    textTransform: 'uppercase',
   },
   sizeWrap: {
     flexDirection: 'row',
@@ -421,42 +394,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.body,
     lineHeight: 22,
   },
-  cartButton: {
+  ctaWrap: {
     marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cartButtonInCart: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#D1D5DB',
-  },
-  cartButtonText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
-  },
-  cartButtonTextInCart: {
-    color: theme.colors.textMuted,
-  },
-  buyButton: {
-    marginTop: theme.spacing.md,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buyButtonDisabled: {
-    opacity: 0.45,
-  },
-  buyButtonText: {
-    color: theme.colors.surface,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
   },
 });

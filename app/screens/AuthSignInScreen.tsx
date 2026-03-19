@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -8,6 +7,8 @@ import {
   View,
 } from 'react-native';
 
+import { AppButton } from '../components/AppButton';
+import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { useAuth } from '../providers/AuthProvider';
 import { theme } from '../theme/theme';
@@ -45,8 +46,9 @@ export function AuthSignInScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Sign In</Text>
-      <Text style={styles.subtitle}>Use password or request a magic link.</Text>
+      <SectionLabel>Fashaun</SectionLabel>
+      <Text style={styles.title}>Enter the Atelier</Text>
+      <Text style={styles.subtitle}>Use your password or request a magic link.</Text>
 
       <View style={styles.modeRow}>
         <Pressable
@@ -86,13 +88,11 @@ export function AuthSignInScreen() {
         />
       ) : null}
 
-      <Pressable style={styles.submitButton} onPress={onSubmit} disabled={submitting}>
-        {submitting ? (
-          <ActivityIndicator color={theme.colors.surface} />
-        ) : (
-          <Text style={styles.submitText}>{mode === 'password' ? 'Sign In' : 'Send Magic Link'}</Text>
-        )}
-      </Pressable>
+      <AppButton
+        label={mode === 'password' ? 'Sign In' : 'Send Magic Link'}
+        onPress={onSubmit}
+        loading={submitting}
+      />
 
       {message ? <Text style={styles.message}>{message}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -102,16 +102,19 @@ export function AuthSignInScreen() {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: theme.typography.title,
+    fontSize: theme.typography.display,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.tight,
   },
   subtitle: {
-    fontSize: theme.typography.body,
+    fontSize: theme.typography.caption,
     color: theme.colors.textMuted,
     marginBottom: theme.spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: theme.typography.tracking.wide,
+    fontWeight: '600',
   },
   modeRow: {
     flexDirection: 'row',
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.sm,
   },
   modeButtonActive: {
-    backgroundColor: '#E8EEFF',
+    backgroundColor: theme.colors.accentSoft,
   },
   modeText: {
     color: theme.colors.textMuted,
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   modeTextActive: {
-    color: theme.colors.primary,
+    color: theme.colors.text,
   },
   input: {
     backgroundColor: theme.colors.surface,
@@ -153,26 +156,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.body,
   },
-  submitButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitText: {
-    color: theme.colors.surface,
-    fontWeight: '700',
-    fontSize: theme.typography.body,
-  },
   message: {
     marginTop: theme.spacing.md,
-    color: '#0F766E',
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
   },
   error: {
     marginTop: theme.spacing.md,
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.caption,
   },
 });

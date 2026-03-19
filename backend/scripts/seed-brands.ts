@@ -26,6 +26,10 @@ async function main(): Promise<void> {
       slug: toSlug(seed),
       is_active: seed.active,
       source_type: seed.source_type,
+      logo_url: seed.logo_url ?? null,
+      category: seed.category ?? null,
+      country: seed.country ?? null,
+      external_store_link: seed.external_store_link ?? `https://${domain}`,
     };
   });
 
@@ -60,6 +64,10 @@ async function main(): Promise<void> {
         slug: row.slug,
         source_type: row.source_type,
         is_active: row.is_active,
+        logo_url: row.logo_url,
+        category: row.category,
+        country: row.country,
+        external_store_link: row.external_store_link,
       })
       .eq('id', existing.id);
 

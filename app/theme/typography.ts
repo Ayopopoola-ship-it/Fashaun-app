@@ -5,11 +5,17 @@ export const typography = {
     semibold: 'System',
     bold: 'System',
   },
-  title: 28,
-  heading: 21,
+  display: 36,
+  title: 30,
+  heading: 22,
   body: 16,
-  caption: 14,
-  overline: 12,
+  caption: 13,
+  overline: 11,
+  tracking: {
+    tight: -0.8,
+    normal: -0.3,
+    wide: 0.8,
+  },
 } as const;
 
 export type AppTypography = typeof typography;

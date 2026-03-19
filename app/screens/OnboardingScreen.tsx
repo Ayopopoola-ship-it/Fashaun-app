@@ -1,6 +1,8 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { AppButton } from '../components/AppButton';
+import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
@@ -14,18 +16,14 @@ export function OnboardingScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome to Fashaun</Text>
-        <Text style={styles.subtitle}>Set your style profile by selecting brands you love.</Text>
+        <SectionLabel>Welcome</SectionLabel>
+        <Text style={styles.title}>Welcome to the Atelier</Text>
+        <Text style={styles.subtitle}>Begin with a curated brand selection to shape your fashion feed.</Text>
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('BrandSelection')}>
-          <Text style={styles.primaryButtonText}>Select Brands</Text>
-        </Pressable>
-
-        <Pressable style={styles.signOutButton} onPress={() => signOut()}>
-          <Text style={styles.signOutButtonText}>Sign Out</Text>
-        </Pressable>
+        <AppButton label="Select Brands" onPress={() => navigation.navigate('BrandSelection')} />
+        <AppButton label="Sign Out" variant="secondary" onPress={() => signOut()} />
       </View>
     </ScreenContainer>
   );
@@ -37,43 +35,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: theme.typography.title,
+    fontSize: theme.typography.display,
     fontWeight: '700',
     color: theme.colors.text,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.tight,
   },
   subtitle: {
-    fontSize: theme.typography.body,
+    fontSize: theme.typography.caption,
     color: theme.colors.textMuted,
-    lineHeight: 23,
+    lineHeight: 20,
+    textTransform: 'uppercase',
+    letterSpacing: theme.typography.tracking.wide,
+    fontWeight: '600',
   },
   actions: {
     gap: theme.spacing.smd,
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: theme.colors.surface,
-    fontWeight: '700',
-    fontSize: theme.typography.body,
-  },
-  signOutButton: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signOutButtonText: {
-    color: theme.colors.text,
-    fontWeight: '600',
-    fontSize: theme.typography.body,
   },
 });

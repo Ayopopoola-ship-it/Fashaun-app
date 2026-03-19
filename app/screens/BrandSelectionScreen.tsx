@@ -1,7 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -9,6 +8,10 @@ import {
   View,
 } from 'react-native';
 
+import { AppButton } from '../components/AppButton';
+import { EmptyState } from '../components/EmptyState';
+import { LoadingState } from '../components/LoadingState';
+import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../providers/AuthProvider';
@@ -103,14 +106,14 @@ export function BrandSelectionScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
+      <SectionLabel>Brand Curation</SectionLabel>
       <Text style={styles.title}>Choose Your Brands</Text>
-      <Text style={styles.subtitle}>Select the labels you want in your feed.</Text>
+      <Text style={styles.subtitle}>Select the labels you want in your discovery feed.</Text>
 
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerStateText}>Loading brands...</Text>
-        </View>
+        <LoadingState label="Loading brands" />
+      ) : brands.length === 0 ? (
+        <EmptyState title="No brands available" subtitle="Brand records will appear here once active." />
       ) : (
         <FlatList
           data={brands}
@@ -138,20 +141,14 @@ export function BrandSelectionScreen({ navigation }: Props) {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <Pressable
-        onPress={() => void onContinue()}
-        disabled={selectedBrandIds.length === 0 || saving || loading}
-        style={[
-          styles.continueButton,
-          selectedBrandIds.length === 0 || saving || loading ? styles.continueButtonDisabled : undefined,
-        ]}
-      >
-        {saving ? (
-          <ActivityIndicator color={theme.colors.surface} />
-        ) : (
-          <Text style={styles.continueButtonText}>Continue ({selectedBrandIds.length})</Text>
-        )}
-      </Pressable>
+      <View style={styles.continueButton}>
+        <AppButton
+          label={`Continue (${selectedBrandIds.length})`}
+          onPress={() => void onContinue()}
+          disabled={selectedBrandIds.length === 0 || loading}
+          loading={saving}
+        />
+      </View>
     </ScreenContainer>
   );
 }
@@ -162,12 +159,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.body,
+    fontSize: theme.typography.caption,
     color: theme.colors.textMuted,
     marginBottom: theme.spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: theme.typography.tracking.wide,
+    fontWeight: '600',
   },
   listContent: {
     paddingBottom: theme.spacing.md,
@@ -185,8 +185,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brandCardSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: '#EEF3FF',
+    borderColor: theme.colors.accent,
+    backgroundColor: theme.colors.accentSoft,
   },
   brandName: {
     color: theme.colors.text,
@@ -207,39 +207,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   checkDotSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary,
-  },
-  centerState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  centerStateText: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
+    borderColor: theme.colors.accent,
+    backgroundColor: theme.colors.accent,
   },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
   },
-  continueButton: {
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueButtonDisabled: {
-    opacity: 0.45,
-  },
-  continueButtonText: {
-    color: theme.colors.surface,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
-  },
+  continueButton: { marginTop: theme.spacing.sm },
 });

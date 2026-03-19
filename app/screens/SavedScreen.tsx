@@ -1,18 +1,21 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
+import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
+import { SearchOverlay } from '../components/SearchOverlay';
+import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { useAuth } from '../providers/AuthProvider';
 import { addToCart, fetchCartProductIds } from '../services/cart';
@@ -50,6 +53,7 @@ export function SavedScreen() {
 
   const [productSearch, setProductSearch] = useState('');
   const [brandSearch, setBrandSearch] = useState('');
+  const [searchVisible, setSearchVisible] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,9 +181,23 @@ export function SavedScreen() {
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Saved</Text>
-        <Text style={styles.subtitle}>Products and brands you want to keep track of.</Text>
+        <View style={styles.headerCopy}>
+          <SectionLabel>Private Edit</SectionLabel>
+          <Text style={styles.title}>Saved</Text>
+          <Text style={styles.subtitle}>Your curated products and fashion houses.</Text>
+        </View>
+        <Pressable style={styles.iconButton} onPress={() => setSearchVisible(true)}>
+          <Feather name="search" size={18} color={theme.colors.text} />
+        </Pressable>
       </View>
+      <SearchOverlay
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        onSubmit={activeTab === 'products' ? setProductSearch : setBrandSearch}
+        placeholder={activeTab === 'products' ? 'Search saved products' : 'Search saved brands'}
+        scopeKey={activeTab === 'products' ? 'saved_products' : 'saved_brands'}
+        initialQuery={activeTab === 'products' ? productSearch : brandSearch}
+      />
 
       <View style={styles.tabRow}>
         <Pressable
@@ -202,19 +220,8 @@ export function SavedScreen() {
 
       {activeTab === 'products' ? (
         <>
-          <TextInput
-            value={productSearch}
-            onChangeText={setProductSearch}
-            placeholder="Search saved products"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.searchInput}
-          />
-
           {loading ? (
-            <View style={styles.centerState}>
-              <ActivityIndicator color={theme.colors.primary} />
-              <Text style={styles.centerStateText}>Loading saved products...</Text>
-            </View>
+            <LoadingState label="Loading saved products" variant="cards" />
           ) : error ? (
             <View style={styles.centerState}>
               <Text style={styles.errorText}>{error}</Text>
@@ -224,8 +231,10 @@ export function SavedScreen() {
             </View>
           ) : filteredProducts.length === 0 ? (
             <View style={styles.centerState}>
-              <Text style={styles.emptyTitle}>No saved products</Text>
-              <Text style={styles.emptySubtitle}>Tap the heart icon on products to save them.</Text>
+              <EmptyState
+                title="No saved products"
+                subtitle="Tap the heart icon on products to keep them here."
+              />
             </View>
           ) : (
             <FlatList
@@ -242,13 +251,7 @@ export function SavedScreen() {
                     onPress={() => navigation.navigate('ProductDetails', { productId: item.productId })}
                   >
                   <View style={styles.imageWrap}>
-                    {item.productImageUrl ? (
-                      <Image source={{ uri: item.productImageUrl }} style={styles.image} resizeMode="cover" />
-                    ) : (
-                      <View style={styles.imageFallback}>
-                        <Text style={styles.imageFallbackText}>No Image</Text>
-                      </View>
-                    )}
+                    <FadeInImage uri={item.productImageUrl} style={styles.image} />
                   </View>
                   <View style={styles.cardBody}>
                     <View style={styles.cardTopRow}>
@@ -285,19 +288,8 @@ export function SavedScreen() {
         </>
       ) : (
         <>
-          <TextInput
-            value={brandSearch}
-            onChangeText={setBrandSearch}
-            placeholder="Search saved brands"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.searchInput}
-          />
-
           {loading ? (
-            <View style={styles.centerState}>
-              <ActivityIndicator color={theme.colors.primary} />
-              <Text style={styles.centerStateText}>Loading saved brands...</Text>
-            </View>
+            <LoadingState label="Loading saved brands" variant="cards" cardCount={2} />
           ) : error ? (
             <View style={styles.centerState}>
               <Text style={styles.errorText}>{error}</Text>
@@ -307,8 +299,7 @@ export function SavedScreen() {
             </View>
           ) : filteredBrands.length === 0 ? (
             <View style={styles.centerState}>
-              <Text style={styles.emptyTitle}>No saved brands</Text>
-              <Text style={styles.emptySubtitle}>Tap the heart icon on brands to save them.</Text>
+              <EmptyState title="No saved brands" subtitle="Tap the heart icon on brands to keep them here." />
             </View>
           ) : (
             <FlatList
@@ -339,17 +330,35 @@ export function SavedScreen() {
 const styles = StyleSheet.create({
   headerRow: {
     marginBottom: theme.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+  },
+  headerCopy: {
+    flex: 1,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: theme.typography.title,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 2,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.caption,
+    fontSize: theme.typography.body,
     color: theme.colors.textMuted,
+    lineHeight: 22,
   },
   tabRow: {
     flexDirection: 'row',
@@ -368,7 +377,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#E8EEFF',
+    backgroundColor: theme.colors.accentSoft,
   },
   tabText: {
     color: theme.colors.textMuted,
@@ -378,18 +387,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   tabTextActive: {
-    color: theme.colors.primary,
-  },
-  searchInput: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    paddingHorizontal: theme.spacing.md,
     color: theme.colors.text,
-    fontSize: theme.typography.body,
-    marginBottom: theme.spacing.md,
   },
   centerState: {
     flex: 1,
@@ -397,13 +395,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
-  centerStateText: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
-  },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
@@ -449,17 +442,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   cardBody: {
     paddingHorizontal: theme.spacing.md,
@@ -475,7 +458,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   brandName: {
-    color: theme.colors.primary,
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
     fontWeight: '700',
     textTransform: 'uppercase',

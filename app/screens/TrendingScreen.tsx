@@ -1,25 +1,33 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
+import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SearchOverlay } from '../components/SearchOverlay';
+import { SectionLabel } from '../components/SectionLabel';
+import { TrendingSwipeDeck } from '../components/TrendingSwipeDeck';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchHomeFeedPage, HomeFeedItem } from '../services/feed';
-import { trackProductEvent } from '../services/interactions';
+import { trackProductEvent, trackSwipeEvent } from '../services/interactions';
 import { fetchSavedProductIds, saveProduct, unsaveProduct } from '../services/saves';
 import { theme } from '../theme/theme';
 
-const LIMIT = 40;
+const LIMIT = 48;
+const VIEW_MODE_KEY = '@fashaun:trending:view-mode';
+
+type TrendingViewMode = 'grid' | 'swipe';
 
 function formatPrice(amount: number | null, currencyCode: string): string {
   if (amount === null) {
@@ -41,11 +49,26 @@ export function TrendingScreen() {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
 
+  const [viewMode, setViewMode] = useState<TrendingViewMode>('grid');
+  const [searchVisible, setSearchVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<HomeFeedItem[]>([]);
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const savedMode = await AsyncStorage.getItem(VIEW_MODE_KEY);
+        if (savedMode === 'grid' || savedMode === 'swipe') {
+          setViewMode(savedMode);
+        }
+      } catch {
+        // Ignore local preference read errors.
+      }
+    })();
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!user) {
@@ -104,11 +127,11 @@ export function TrendingScreen() {
           brandId: item.brand_id,
           productId: item.id,
           metadata: {
-            screen: 'trending',
+            screen: `trending_${viewMode}`,
           },
         });
-      } catch (trackError: unknown) {
-        console.warn('Failed to track product_click from trending', trackError);
+      } catch {
+        // Non-blocking analytics.
       }
     }
 
@@ -139,6 +162,52 @@ export function TrendingScreen() {
     }
   }
 
+  async function onSwipeLeft(item: HomeFeedItem): Promise<void> {
+    if (!user) {
+      return;
+    }
+
+    try {
+      await trackSwipeEvent({
+        event: 'swipe_left',
+        userId: user.id,
+        brandId: item.brand_id,
+        productId: item.id,
+        metadata: {
+          screen: 'trending_swipe',
+        },
+      });
+    } catch {
+      // Non-blocking analytics.
+    }
+  }
+
+  async function onSwipeRight(item: HomeFeedItem): Promise<void> {
+    if (!user) {
+      return;
+    }
+
+    try {
+      await trackSwipeEvent({
+        event: 'swipe_right',
+        userId: user.id,
+        brandId: item.brand_id,
+        productId: item.id,
+        metadata: {
+          screen: 'trending_swipe',
+        },
+      });
+    } catch {
+      // Non-blocking analytics.
+    }
+  }
+
+  async function toggleViewMode(): Promise<void> {
+    const nextMode: TrendingViewMode = viewMode === 'grid' ? 'swipe' : 'grid';
+    setViewMode(nextMode);
+    await AsyncStorage.setItem(VIEW_MODE_KEY, nextMode);
+  }
+
   function reasonForItem(item: HomeFeedItem, index: number): 'Trending' | 'Selling Fast' | 'Hot Right Now' | 'Popular This Week' {
     const ageMs = Date.now() - new Date(item.created_at).getTime();
     const ageDays = ageMs / (1000 * 60 * 60 * 24);
@@ -157,23 +226,32 @@ export function TrendingScreen() {
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Trending</Text>
-        <Text style={styles.subtitle}>Search products trending in brands you already follow.</Text>
+        <View style={styles.headerCopy}>
+          <SectionLabel>Signal</SectionLabel>
+          <Text style={styles.title}>Trending</Text>
+          <Text style={styles.subtitle}>Switch between classic browsing and swipe mode.</Text>
+        </View>
+        <View style={styles.headerActions}>
+          <Pressable style={styles.iconButton} onPress={() => setSearchVisible(true)}>
+            <Feather name="search" size={18} color={theme.colors.text} />
+          </Pressable>
+          <Pressable style={styles.iconButton} onPress={() => void toggleViewMode()}>
+            <Feather name={viewMode === 'grid' ? 'layers' : 'grid'} size={18} color={theme.colors.text} />
+          </Pressable>
+        </View>
       </View>
 
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
+      <SearchOverlay
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        onSubmit={setQuery}
         placeholder="Search trending products"
-        placeholderTextColor={theme.colors.textMuted}
-        style={styles.searchInput}
+        scopeKey="trending"
+        initialQuery={query}
       />
 
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerStateText}>Loading trending products...</Text>
-        </View>
+        <LoadingState label="Loading trending products" variant="cards" />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -183,9 +261,20 @@ export function TrendingScreen() {
         </View>
       ) : filteredProducts.length === 0 ? (
         <View style={styles.centerState}>
-          <Text style={styles.emptyTitle}>No trending products found</Text>
-          <Text style={styles.emptySubtitle}>Try another keyword or follow more brands.</Text>
+          <EmptyState
+            title="No trending products found"
+            subtitle="Try another keyword or follow more brands."
+          />
         </View>
+      ) : viewMode === 'swipe' ? (
+        <TrendingSwipeDeck
+          items={filteredProducts}
+          savedProductIds={savedProductIds}
+          onOpenItem={onProductPress}
+          onToggleSave={onToggleSave}
+          onSwipeLeft={onSwipeLeft}
+          onSwipeRight={onSwipeRight}
+        />
       ) : (
         <FlatList
           data={filteredProducts}
@@ -198,25 +287,19 @@ export function TrendingScreen() {
 
             return (
               <Pressable style={styles.card} onPress={() => void onProductPress(item)}>
-              <View style={styles.imageWrap}>
-                {item.image_url ? (
-                  <Image source={{ uri: item.image_url }} style={styles.image} resizeMode="cover" />
-                ) : (
-                  <View style={styles.imageFallback}>
-                    <Text style={styles.imageFallbackText}>No Image</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.cardBody}>
-                <View style={styles.topRow}>
-                  <Text style={styles.reasonPill}>{reason}</Text>
-                  <HeartButton active={isSaved} onPress={() => void onToggleSave(item)} />
+                <View style={styles.imageWrap}>
+                  <FadeInImage uri={item.image_url} style={styles.image} />
                 </View>
-                <Text style={styles.brandName}>{item.brand_name}</Text>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.priceText}>{formatPrice(item.price_amount, item.currency_code)}</Text>
-              </View>
-            </Pressable>
+                <View style={styles.cardBody}>
+                  <View style={styles.topRow}>
+                    <Text style={styles.reasonPill}>{reason}</Text>
+                    <HeartButton active={isSaved} onPress={() => void onToggleSave(item)} />
+                  </View>
+                  <Text style={styles.brandName}>{item.brand_name}</Text>
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.priceText}>{formatPrice(item.price_amount, item.currency_code)}</Text>
+                </View>
+              </Pressable>
             );
           }}
         />
@@ -228,28 +311,41 @@ export function TrendingScreen() {
 const styles = StyleSheet.create({
   headerRow: {
     marginBottom: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+  },
+  headerCopy: {
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingTop: theme.spacing.xs,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: theme.typography.title,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 2,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.caption,
-    color: theme.colors.textMuted,
-  },
-  searchInput: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    paddingHorizontal: theme.spacing.md,
-    color: theme.colors.text,
     fontSize: theme.typography.body,
-    marginBottom: theme.spacing.md,
+    color: theme.colors.textMuted,
+    lineHeight: 22,
   },
   centerState: {
     flex: 1,
@@ -257,13 +353,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
-  centerStateText: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
-  },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
@@ -281,18 +372,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: theme.typography.body,
   },
-  emptyTitle: {
-    fontSize: theme.typography.heading,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.body,
-    textAlign: 'center',
-  },
   listContent: {
     paddingBottom: theme.spacing.xl,
     gap: theme.spacing.smd,
@@ -309,17 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   cardBody: {
     paddingHorizontal: theme.spacing.md,
@@ -333,8 +402,8 @@ const styles = StyleSheet.create({
   },
   reasonPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E9EEF8',
-    color: '#1E3A8A',
+    backgroundColor: theme.colors.accentSoft,
+    color: theme.colors.accent,
     borderRadius: theme.radius.pill,
     fontSize: 12,
     fontWeight: '600',
@@ -342,7 +411,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   brandName: {
-    color: theme.colors.primary,
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
     fontWeight: '700',
     textTransform: 'uppercase',

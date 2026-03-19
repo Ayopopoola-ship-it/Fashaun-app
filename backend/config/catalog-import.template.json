@@ -1,0 +1,34 @@
+{
+  "brands": [
+    {
+      "name": "Example Brand",
+      "domain": "examplebrand.com",
+      "active": true,
+      "source_type": "shopify",
+      "logo_url": "https://examplebrand.com/logo.png",
+      "category": "Ready-to-Wear",
+      "country": "Nigeria",
+      "external_store_link": "https://examplebrand.com"
+    }
+  ],
+  "products": [
+    {
+      "brand_domain": "examplebrand.com",
+      "external_product_id": "shopify_10001",
+      "name": "Structured Linen Jacket",
+      "description": "Lightweight tailored jacket.",
+      "image_urls": [
+        "https://examplebrand.com/images/jacket-1.jpg",
+        "https://examplebrand.com/images/jacket-2.jpg"
+      ],
+      "sizes": ["S", "M", "L"],
+      "colors": ["Sand"],
+      "collection": "Resort 2026",
+      "availability": true,
+      "product_url": "https://examplebrand.com/products/structured-linen-jacket",
+      "price_amount": 185.0,
+      "currency_code": "USD",
+      "is_active": true
+    }
+  ]
+}

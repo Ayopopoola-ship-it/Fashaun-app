@@ -2,9 +2,12 @@ import { PostHog } from 'posthog-react-native';
 
 type AnalyticsEvent =
   | 'sign_in'
-  | 'brand_followed'
-  | 'product_viewed'
-  | 'product_saved'
+  | 'brand_follow'
+  | 'product_view'
+  | 'product_click'
+  | 'product_save'
+  | 'swipe_right'
+  | 'swipe_left'
   | 'buy_clicked';
 
 let client: PostHog | null = null;

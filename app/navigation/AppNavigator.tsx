@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../providers/AuthProvider';
@@ -52,7 +53,7 @@ function MainTabsNavigator() {
   return (
     <Tab.Navigator
       initialRouteName="Discovery"
-      screenOptions={({ navigation }) => ({
+      screenOptions={({ navigation, route }) => ({
         headerTitleAlign: 'center',
         headerStyle: {
           backgroundColor: theme.colors.surface,
@@ -61,9 +62,29 @@ function MainTabsNavigator() {
         headerLeft: () => <HeaderMenuButton navigation={navigation} />,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
+        tabBarIcon: ({ color, size, focused }) => {
+          let iconName: keyof typeof Feather.glyphMap = 'circle';
+
+          if (route.name === 'Discovery') {
+            iconName = 'compass';
+          } else if (route.name === 'Trending') {
+            iconName = 'trending-up';
+          } else if (route.name === 'PriceDrop') {
+            iconName = 'tag';
+          } else if (route.name === 'Saved') {
+            iconName = 'heart';
+          } else if (route.name === 'Cart') {
+            iconName = 'shopping-bag';
+          }
+
+          return <Feather name={iconName} size={focused ? size + 1 : size} color={color} />;
+        },
         tabBarStyle: {
           borderTopColor: theme.colors.border,
           backgroundColor: theme.colors.surface,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
         },
         tabBarLabelStyle: {
           fontSize: theme.typography.overline,
@@ -89,6 +110,15 @@ function SideMenuScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.sideMenuContainer}>
+      <Pressable
+        style={styles.sideMenuItem}
+        onPress={() => {
+          navigation.goBack();
+          navigation.navigate('MainTabs');
+        }}
+      >
+        <Text style={styles.sideMenuItemText}>Home</Text>
+      </Pressable>
       <Pressable
         style={styles.sideMenuItem}
         onPress={() => {

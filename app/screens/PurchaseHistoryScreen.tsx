@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { EmptyState } from '../components/EmptyState';
+import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SectionLabel } from '../components/SectionLabel';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchPurchaseHistory, PurchaseHistoryItem } from '../services/purchaseHistory';
 import { theme } from '../theme/theme';
@@ -54,16 +57,14 @@ export function PurchaseHistoryScreen() {
 
   return (
     <ScreenContainer>
+      <SectionLabel>Concierge Log</SectionLabel>
       <Text style={styles.title}>Tracked Buy Activity</Text>
       <Text style={styles.subtitle}>
         This shows buy clicks from in-app browsing, not confirmed checkout transactions.
       </Text>
 
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerStateText}>Loading activity...</Text>
-        </View>
+        <LoadingState label="Loading activity" />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -73,10 +74,10 @@ export function PurchaseHistoryScreen() {
         </View>
       ) : items.length === 0 ? (
         <View style={styles.centerState}>
-          <Text style={styles.emptyTitle}>No tracked buy activity yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Open a product and tap Buy on Brand Site to see entries here.
-          </Text>
+          <EmptyState
+            title="No tracked buy activity yet"
+            subtitle="Open a product and tap Buy on Brand Site to see entries here."
+          />
         </View>
       ) : (
         <FlatList
@@ -115,12 +116,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.spacing.xs,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.caption,
+    fontSize: theme.typography.body,
     color: theme.colors.textMuted,
     marginBottom: theme.spacing.md,
+    lineHeight: 22,
   },
   centerState: {
     flex: 1,
@@ -134,14 +136,14 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.caption,
   },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
   },
   retryButton: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 8,
+    borderRadius: theme.radius.sm,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
   },
@@ -149,18 +151,6 @@ const styles = StyleSheet.create({
     color: theme.colors.surface,
     fontWeight: '700',
     fontSize: theme.typography.caption,
-  },
-  emptyTitle: {
-    fontSize: theme.typography.heading,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.body,
-    textAlign: 'center',
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
@@ -198,7 +188,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
   },
   brandName: {
-    color: theme.colors.primary,
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
     fontWeight: '700',
     marginBottom: 4,
@@ -217,8 +207,8 @@ const styles = StyleSheet.create({
   },
   trackingPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E9EEF8',
-    color: '#1E3A8A',
+    backgroundColor: theme.colors.accentSoft,
+    color: theme.colors.accent,
     borderRadius: theme.radius.pill,
     fontSize: 12,
     fontWeight: '600',

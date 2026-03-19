@@ -1,18 +1,21 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
+import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
+import { SearchOverlay } from '../components/SearchOverlay';
+import { SectionLabel } from '../components/SectionLabel';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchHomeFeedPage, HomeFeedItem } from '../services/feed';
 import { trackProductEvent } from '../services/interactions';
@@ -76,6 +79,7 @@ export function PriceDropScreen() {
   const { user } = useAuth();
 
   const [query, setQuery] = useState('');
+  const [searchVisible, setSearchVisible] = useState(false);
   const [items, setItems] = useState<PriceDropItem[]>([]);
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,23 +208,26 @@ export function PriceDropScreen() {
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Price Drop</Text>
-        <Text style={styles.subtitle}>Search discounted items from followed brands.</Text>
+        <View style={styles.headerCopy}>
+          <SectionLabel>Price Edit</SectionLabel>
+          <Text style={styles.title}>Price Drop</Text>
+          <Text style={styles.subtitle}>Discounted finds relevant to your saved fashion taste.</Text>
+        </View>
+        <Pressable style={styles.iconButton} onPress={() => setSearchVisible(true)}>
+          <Feather name="search" size={18} color={theme.colors.text} />
+        </Pressable>
       </View>
-
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
+      <SearchOverlay
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        onSubmit={setQuery}
         placeholder="Search discounted items"
-        placeholderTextColor={theme.colors.textMuted}
-        style={styles.searchInput}
+        scopeKey="price_drop"
+        initialQuery={query}
       />
 
       {loading ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.centerStateText}>Loading discounted items...</Text>
-        </View>
+        <LoadingState label="Loading discounted items" variant="cards" />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -230,10 +237,10 @@ export function PriceDropScreen() {
         </View>
       ) : filteredItems.length === 0 ? (
         <View style={styles.centerState}>
-          <Text style={styles.emptyTitle}>No discounted items found</Text>
-          <Text style={styles.emptySubtitle}>
-            We will show discount-tagged items here when available from your followed brands.
-          </Text>
+          <EmptyState
+            title="No discounted items found"
+            subtitle="Discount-tagged items will appear here from followed brands."
+          />
         </View>
       ) : (
         <FlatList
@@ -247,13 +254,7 @@ export function PriceDropScreen() {
               onPress={() => void onProductPress(item)}
             >
               <View style={styles.imageWrap}>
-                {item.image_url ? (
-                  <Image source={{ uri: item.image_url }} style={styles.image} resizeMode="cover" />
-                ) : (
-                  <View style={styles.imageFallback}>
-                    <Text style={styles.imageFallbackText}>No Image</Text>
-                  </View>
-                )}
+                <FadeInImage uri={item.image_url} style={styles.image} />
               </View>
               <View style={styles.cardBody}>
                 <View style={styles.cardTopRow}>
@@ -286,28 +287,35 @@ export function PriceDropScreen() {
 const styles = StyleSheet.create({
   headerRow: {
     marginBottom: theme.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+  },
+  headerCopy: {
+    flex: 1,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: theme.typography.title,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 2,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.caption,
-    color: theme.colors.textMuted,
-  },
-  searchInput: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    paddingHorizontal: theme.spacing.md,
-    color: theme.colors.text,
     fontSize: theme.typography.body,
-    marginBottom: theme.spacing.md,
+    color: theme.colors.textMuted,
+    lineHeight: 22,
   },
   centerState: {
     flex: 1,
@@ -321,7 +329,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.caption,
   },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
@@ -367,17 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   cardBody: {
     paddingHorizontal: theme.spacing.md,
@@ -396,8 +394,8 @@ const styles = StyleSheet.create({
   },
   discountPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FEF2F2',
-    color: '#B91C1C',
+    backgroundColor: theme.colors.accentSoft,
+    color: theme.colors.accent,
     borderRadius: theme.radius.pill,
     fontSize: 12,
     fontWeight: '700',
@@ -410,7 +408,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   brandName: {
-    color: theme.colors.primary,
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
     fontWeight: '700',
     textTransform: 'uppercase',

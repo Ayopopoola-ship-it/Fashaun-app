@@ -1,17 +1,21 @@
+import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
+import { AppButton } from '../components/AppButton';
+import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
+import { LoadingState } from '../components/LoadingState';
+import { SearchOverlay } from '../components/SearchOverlay';
+import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { useAuth } from '../providers/AuthProvider';
 import { fetchBrands } from '../services/brands';
@@ -54,6 +58,7 @@ export function HomeFeedScreen() {
 
   const [productSearch, setProductSearch] = useState('');
   const [brandSearch, setBrandSearch] = useState('');
+  const [searchVisible, setSearchVisible] = useState(false);
 
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -233,22 +238,33 @@ export function HomeFeedScreen() {
   return (
     <ScreenContainer>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Discovery</Text>
-        <Text style={styles.subtitle}>Find products and brands that fit your style.</Text>
+        <View style={styles.headerCopy}>
+          <SectionLabel>Discovery</SectionLabel>
+          <Text style={styles.title}>Discovery</Text>
+          <Text style={styles.subtitle}>Curated drops from Nigerian brands you follow.</Text>
+        </View>
+        <Pressable style={styles.iconButton} onPress={() => setSearchVisible(true)}>
+          <Feather name="search" size={18} color={theme.colors.text} />
+        </Pressable>
       </View>
+      <SearchOverlay
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        onSubmit={activeTab === 'products' ? setProductSearch : setBrandSearch}
+        placeholder={activeTab === 'products' ? 'Search products' : 'Search brands'}
+        scopeKey={activeTab === 'products' ? 'discovery_products' : 'discovery_brands'}
+        initialQuery={activeTab === 'products' ? productSearch : brandSearch}
+      />
 
       {showNewUserEmptyState ? (
         <View style={styles.centerState}>
-          <Text style={styles.emptyTitle}>Start by selecting brands</Text>
-          <Text style={styles.emptySubtitle}>
-            Choose a few brands to personalize your discovery feed.
-          </Text>
-          <Pressable
-            style={styles.primaryButton}
-            onPress={() => navigation.navigate('BrandSelection')}
-          >
-            <Text style={styles.primaryButtonText}>Select Brands</Text>
-          </Pressable>
+          <EmptyState
+            title="Start by selecting brands"
+            subtitle="Choose a few houses to personalize your discovery feed."
+          />
+          <View style={styles.primaryButtonWrap}>
+            <AppButton label="Select Brands" onPress={() => navigation.navigate('BrandSelection')} />
+          </View>
         </View>
       ) : (
         <>
@@ -273,19 +289,8 @@ export function HomeFeedScreen() {
 
           {activeTab === 'products' ? (
             <>
-              <TextInput
-                value={productSearch}
-                onChangeText={setProductSearch}
-                placeholder="Search products"
-                placeholderTextColor={theme.colors.textMuted}
-                style={styles.searchInput}
-              />
-
               {loadingInitial ? (
-                <View style={styles.centerState}>
-                  <ActivityIndicator color={theme.colors.primary} />
-                  <Text style={styles.centerStateText}>Loading products...</Text>
-                </View>
+                <LoadingState label="Loading products" variant="cards" />
               ) : error ? (
                 <View style={styles.centerState}>
                   <Text style={styles.errorText}>{error}</Text>
@@ -295,8 +300,7 @@ export function HomeFeedScreen() {
                 </View>
               ) : filteredProducts.length === 0 ? (
                 <View style={styles.centerState}>
-                  <Text style={styles.emptyTitle}>No products found</Text>
-                  <Text style={styles.emptySubtitle}>Try a different keyword.</Text>
+                  <EmptyState title="No products found" subtitle="Try a different keyword." />
                 </View>
               ) : (
                 <FlatList
@@ -310,13 +314,7 @@ export function HomeFeedScreen() {
                     return (
                       <Pressable style={styles.card} onPress={() => void onProductPress(item)}>
                         <View style={styles.imageWrap}>
-                          {item.image_url ? (
-                            <Image source={{ uri: item.image_url }} style={styles.image} resizeMode="cover" />
-                          ) : (
-                            <View style={styles.imageFallback}>
-                              <Text style={styles.imageFallbackText}>No Image</Text>
-                            </View>
-                          )}
+                          <FadeInImage uri={item.image_url} style={styles.image} />
                         </View>
                         <View style={styles.cardBody}>
                           <View style={styles.cardTopRow}>
@@ -339,17 +337,7 @@ export function HomeFeedScreen() {
                   }}
                   ListFooterComponent={
                     hasMore ? (
-                      <Pressable
-                        style={styles.loadMoreButton}
-                        onPress={() => void loadMoreProducts()}
-                        disabled={loadingMore}
-                      >
-                        {loadingMore ? (
-                          <ActivityIndicator color={theme.colors.text} />
-                        ) : (
-                          <Text style={styles.loadMoreButtonText}>Load More</Text>
-                        )}
-                      </Pressable>
+                      <AppButton label="Load More" onPress={() => void loadMoreProducts()} loading={loadingMore} variant="secondary" />
                     ) : null
                   }
                 />
@@ -357,19 +345,8 @@ export function HomeFeedScreen() {
             </>
           ) : (
             <>
-              <TextInput
-                value={brandSearch}
-                onChangeText={setBrandSearch}
-                placeholder="Search brands"
-                placeholderTextColor={theme.colors.textMuted}
-                style={styles.searchInput}
-              />
-
               {loadingInitial ? (
-                <View style={styles.centerState}>
-                  <ActivityIndicator color={theme.colors.primary} />
-                  <Text style={styles.centerStateText}>Loading brands...</Text>
-                </View>
+                <LoadingState label="Loading brands" variant="cards" cardCount={2} />
               ) : error ? (
                 <View style={styles.centerState}>
                   <Text style={styles.errorText}>{error}</Text>
@@ -379,8 +356,7 @@ export function HomeFeedScreen() {
                 </View>
               ) : filteredBrands.length === 0 ? (
                 <View style={styles.centerState}>
-                  <Text style={styles.emptyTitle}>No brands found</Text>
-                  <Text style={styles.emptySubtitle}>Try a different keyword.</Text>
+                  <EmptyState title="No brands found" subtitle="Try a different keyword." />
                 </View>
               ) : (
                 <FlatList
@@ -420,17 +396,35 @@ export function HomeFeedScreen() {
 const styles = StyleSheet.create({
   headerRow: {
     marginBottom: theme.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+  },
+  headerCopy: {
+    flex: 1,
+  },
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: theme.typography.title,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: 2,
-    letterSpacing: -0.4,
+    letterSpacing: theme.typography.tracking.normal,
   },
   subtitle: {
-    fontSize: theme.typography.caption,
+    fontSize: theme.typography.body,
     color: theme.colors.textMuted,
+    lineHeight: 22,
   },
   tabRow: {
     flexDirection: 'row',
@@ -449,7 +443,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#E8EEFF',
+    backgroundColor: theme.colors.accentSoft,
   },
   tabText: {
     color: theme.colors.textMuted,
@@ -459,18 +453,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   tabTextActive: {
-    color: theme.colors.primary,
-  },
-  searchInput: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    paddingHorizontal: theme.spacing.md,
     color: theme.colors.text,
-    fontSize: theme.typography.body,
-    marginBottom: theme.spacing.md,
   },
   centerState: {
     flex: 1,
@@ -478,13 +461,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
-  centerStateText: {
-    marginTop: theme.spacing.sm,
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
-  },
   errorText: {
-    color: '#B91C1C',
+    color: theme.colors.error,
     fontSize: theme.typography.body,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
@@ -514,19 +492,9 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.body,
     textAlign: 'center',
   },
-  primaryButton: {
+  primaryButtonWrap: {
+    width: '100%',
     marginTop: theme.spacing.md,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    paddingHorizontal: theme.spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: theme.colors.surface,
-    fontWeight: '700',
-    fontSize: theme.typography.body,
   },
   listContent: {
     paddingBottom: theme.spacing.xl,
@@ -544,17 +512,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   cardBody: {
     paddingHorizontal: theme.spacing.md,
@@ -570,7 +528,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   brandName: {
-    color: theme.colors.primary,
+    color: theme.colors.accent,
     fontSize: theme.typography.caption,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -585,20 +543,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.caption,
     fontWeight: '600',
-  },
-  loadMoreButton: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    minHeight: theme.button.height,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadMoreButtonText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.caption,
-    fontWeight: '700',
   },
   brandListContent: {
     paddingBottom: theme.spacing.xl,

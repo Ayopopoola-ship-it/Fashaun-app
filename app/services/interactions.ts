@@ -2,6 +2,7 @@ import { trackAnalyticsEvent } from './analytics';
 import { supabase } from './supabaseClient';
 
 export type CoreProductEvent = 'product_view' | 'product_click' | 'product_save' | 'buy_click';
+export type SwipeEvent = 'swipe_right' | 'swipe_left';
 
 interface TrackProductEventInput {
   event: CoreProductEvent;
@@ -26,9 +27,10 @@ const interactionTypeByEvent: Record<CoreProductEvent, 'view' | 'click' | 'save'
   buy_click: 'purchase',
 };
 
-const analyticsEventByInteraction: Partial<Record<CoreProductEvent, 'product_viewed' | 'product_saved' | 'buy_clicked'>> = {
-  product_view: 'product_viewed',
-  product_save: 'product_saved',
+const analyticsEventByInteraction: Partial<Record<CoreProductEvent, 'product_view' | 'product_click' | 'product_save' | 'buy_clicked'>> = {
+  product_view: 'product_view',
+  product_click: 'product_click',
+  product_save: 'product_save',
   buy_click: 'buy_clicked',
 };
 
@@ -80,4 +82,47 @@ export async function trackProductEvent(input: TrackProductEventInput): Promise<
       ...(metadata ?? {}),
     });
   }
+}
+
+interface TrackSwipeEventInput {
+  event: SwipeEvent;
+  userId: string;
+  brandId: string;
+  productId: string;
+  metadata?: Record<string, unknown>;
+}
+
+export async function trackSwipeEvent(input: TrackSwipeEventInput): Promise<void> {
+  const dedupeKey = `${input.userId}:${input.event}:${input.productId}`;
+  const now = Date.now();
+  const lastSeen = recentEvents.get(dedupeKey);
+  if (lastSeen && now - lastSeen < 1500) {
+    return;
+  }
+  recentEvents.set(dedupeKey, now);
+
+  const { event, userId, brandId, productId, metadata } = input;
+
+  const { error } = await supabase.from('user_interactions').insert({
+    user_id: userId,
+    brand_id: brandId,
+    product_id: productId,
+    interaction_type: 'click',
+    source: event,
+    metadata: {
+      event,
+      ...(metadata ?? {}),
+    },
+  });
+
+  if (error) {
+    throw new Error(`Failed to track ${event}: ${error.message}`);
+  }
+
+  trackAnalyticsEvent(event, {
+    user_id: userId,
+    brand_id: brandId,
+    product_id: productId,
+    ...(metadata ?? {}),
+  });
 }

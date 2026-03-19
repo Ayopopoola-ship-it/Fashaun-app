@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     color: theme.colors.textMuted,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   iconActive: {
-    color: '#DC2626',
+    color: theme.colors.accent,
   },
   iconDisabled: {
     opacity: 0.45,

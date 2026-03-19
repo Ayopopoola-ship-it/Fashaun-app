@@ -8,6 +8,9 @@ export interface Brand {
   source_type: BrandSourceType;
   description: string | null;
   logo_url: string | null;
+  category: string | null;
+  country: string | null;
+  external_store_link: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
