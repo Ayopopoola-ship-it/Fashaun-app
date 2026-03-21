@@ -84,7 +84,8 @@ export async function fetchCartItems(userId: string): Promise<CartItem[]> {
   const { data, error } = await supabase
     .from('products')
     .select('id, name, image_urls, product_url, price_amount, currency_code')
-    .in('id', productIds);
+    .in('id', productIds)
+    .eq('status', 'live');
 
   if (error) {
     throw new Error(`Failed to load cart products: ${error.message}`);

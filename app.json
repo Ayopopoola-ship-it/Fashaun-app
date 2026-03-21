@@ -2,6 +2,7 @@
   "expo": {
     "name": "Fashaun V1",
     "slug": "fashaun-v1",
+    "scheme": "fashaun",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",

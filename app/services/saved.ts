@@ -60,8 +60,9 @@ export async function fetchSavedProducts(userId: string): Promise<SavedProductIt
       supabase
         .from('products')
         .select('id, name, image_urls, product_url, price_amount, currency_code')
-        .in('id', productIds),
-      supabase.from('brands').select('id, name').in('id', brandIds),
+        .in('id', productIds)
+        .eq('status', 'live'),
+      supabase.from('brands').select('id, name').in('id', brandIds).eq('status', 'live'),
     ]);
 
   if (productsError) {
@@ -121,7 +122,8 @@ export async function fetchSavedBrands(userId: string): Promise<SavedBrandItem[]
   const { data: brands, error: brandsError } = await supabase
     .from('brands')
     .select('*')
-    .in('id', brandIds);
+    .in('id', brandIds)
+    .eq('status', 'live');
 
   if (brandsError) {
     throw new Error(`Failed to fetch brand metadata: ${brandsError.message}`);

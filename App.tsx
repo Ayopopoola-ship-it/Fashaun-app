@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -10,6 +10,19 @@ import { AuthNavigator } from './app/navigation/AuthNavigator';
 import { AuthProvider, useAuth } from './app/providers/AuthProvider';
 import { initializeAnalytics } from './app/services/analytics';
 import { theme } from './app/theme/theme';
+
+const linking: LinkingOptions<any> = {
+  prefixes: ['fashaun://'],
+  config: {
+    screens: {
+      SignIn: 'signin',
+      BrandRequestDetails: 'request/:requestId',
+      RequestBrands: 'request-brand',
+      Leaderboard: 'leaderboard',
+      History: 'history',
+    },
+  },
+};
 
 function RootNavigator() {
   const { loading, session } = useAuth();
@@ -33,7 +46,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <StatusBar style="dark" />
         <RootNavigator />
       </NavigationContainer>

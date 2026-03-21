@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { SectionLabel } from '../components/SectionLabel';
@@ -64,7 +65,7 @@ export function PurchaseHistoryScreen() {
       </Text>
 
       {loading ? (
-        <LoadingState label="Loading activity" />
+        <LoadingState label="Loading activity" variant="cards" cardCount={3} />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -88,13 +89,7 @@ export function PurchaseHistoryScreen() {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.imageWrap}>
-                {item.productImageUrl ? (
-                  <Image source={{ uri: item.productImageUrl }} style={styles.image} resizeMode="cover" />
-                ) : (
-                  <View style={styles.imageFallback}>
-                    <Text style={styles.imageFallbackText}>No Image</Text>
-                  </View>
-                )}
+                <FadeInImage uri={item.productImageUrl} style={styles.image} />
               </View>
               <View style={styles.cardBody}>
                 <Text style={styles.brandName}>{item.brandName}</Text>
@@ -170,17 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   cardBody: {
     flex: 1,

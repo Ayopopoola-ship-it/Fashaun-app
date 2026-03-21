@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import { AppButton } from '../components/AppButton';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
 import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -224,7 +224,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
   return (
     <ScreenContainer>
       {loading ? (
-        <LoadingState label="Loading product" />
+        <LoadingState label="Loading product" variant="cards" cardCount={1} />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -241,7 +241,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
               keyExtractor={(item, index) => `${item}-${index}`}
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => <Image source={{ uri: item }} style={styles.galleryImage} />}
+              renderItem={({ item }) => <FadeInImage uri={item} style={styles.galleryImage} />}
               style={styles.gallery}
             />
           ) : (
@@ -259,7 +259,7 @@ export function ProductDetailsScreen({ route, navigation }: Props) {
 
           {product.sizes.length > 0 ? (
             <View style={styles.section}>
-            <SectionLabel>Available Sizes</SectionLabel>
+              <SectionLabel>Available Sizes</SectionLabel>
               <View style={styles.sizeWrap}>
                 {product.sizes.map((size) => (
                   <View key={size} style={styles.sizeChip}>

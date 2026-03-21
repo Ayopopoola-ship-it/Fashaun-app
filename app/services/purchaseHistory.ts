@@ -54,8 +54,8 @@ export async function fetchPurchaseHistory(userId: string, limit = 50): Promise<
 
   const [{ data: products, error: productsError }, { data: brands, error: brandsError }] =
     await Promise.all([
-      supabase.from('products').select('id, name, image_urls').in('id', productIds),
-      supabase.from('brands').select('id, name').in('id', brandIds),
+      supabase.from('products').select('id, name, image_urls').in('id', productIds).eq('status', 'live'),
+      supabase.from('brands').select('id, name').in('id', brandIds).eq('status', 'live'),
     ]);
 
   if (productsError) {

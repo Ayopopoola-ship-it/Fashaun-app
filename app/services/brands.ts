@@ -11,7 +11,7 @@ export async function fetchBrands(options: FetchBrandsOptions = {}): Promise<Bra
   let query = supabase.from('brands').select('*').order('name', { ascending: true });
 
   if (activeOnly) {
-    query = query.eq('is_active', true);
+    query = query.eq('status', 'live');
   }
 
   const { data, error } = await query;

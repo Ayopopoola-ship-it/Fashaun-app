@@ -1,8 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '../components/EmptyState';
+import { FadeInImage } from '../components/FadeInImage';
 import { HeartButton } from '../components/HeartButton';
 import { LoadingState } from '../components/LoadingState';
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -122,7 +123,7 @@ export function BrandPageScreen({ route, navigation }: Props) {
   return (
     <ScreenContainer>
       {loading ? (
-        <LoadingState label="Loading brand" />
+        <LoadingState label="Loading brand" variant="cards" cardCount={2} />
       ) : error ? (
         <View style={styles.centerState}>
           <Text style={styles.errorText}>{error}</Text>
@@ -163,13 +164,7 @@ export function BrandPageScreen({ route, navigation }: Props) {
                   onPress={() => void onProductPress(item)}
                 >
                   <View style={styles.productImageWrap}>
-                    {item.image_urls?.[0] ? (
-                      <Image source={{ uri: item.image_urls[0] }} style={styles.productImage} resizeMode="cover" />
-                    ) : (
-                      <View style={styles.productImageFallback}>
-                        <Text style={styles.productImageFallbackText}>No Image</Text>
-                      </View>
-                    )}
+                    <FadeInImage uri={item.image_urls?.[0] ?? null} style={styles.productImage} />
                   </View>
                   <View style={styles.productBody}>
                     <Text style={styles.productName}>{item.name}</Text>
@@ -257,17 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceMuted,
   },
   productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  productImageFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  productImageFallbackText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.typography.caption,
   },
   productBody: {
     paddingHorizontal: theme.spacing.md,

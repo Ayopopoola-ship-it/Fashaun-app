@@ -5,14 +5,11 @@ import { AppButton } from '../components/AppButton';
 import { SectionLabel } from '../components/SectionLabel';
 import { ScreenContainer } from '../components/ScreenContainer';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { useAuth } from '../providers/AuthProvider';
 import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
 export function OnboardingScreen({ navigation }: Props) {
-  const { signOut } = useAuth();
-
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -23,7 +20,6 @@ export function OnboardingScreen({ navigation }: Props) {
 
       <View style={styles.actions}>
         <AppButton label="Select Brands" onPress={() => navigation.navigate('BrandSelection')} />
-        <AppButton label="Sign Out" variant="secondary" onPress={() => signOut()} />
       </View>
     </ScreenContainer>
   );

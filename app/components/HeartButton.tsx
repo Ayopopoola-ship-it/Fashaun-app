@@ -1,4 +1,4 @@
-import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
 
 import { theme } from '../theme/theme';
 
@@ -11,6 +11,11 @@ type HeartButtonProps = {
 };
 
 export function HeartButton({ active, onPress, disabled = false, style, size = 26 }: HeartButtonProps) {
+  function handlePress(event: GestureResponderEvent): void {
+    event.stopPropagation();
+    onPress();
+  }
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -18,7 +23,7 @@ export function HeartButton({ active, onPress, disabled = false, style, size = 2
       accessibilityState={{ disabled, selected: active }}
       hitSlop={8}
       style={({ pressed }) => [styles.button, pressed ? styles.buttonPressed : undefined, style]}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
     >
       <Text

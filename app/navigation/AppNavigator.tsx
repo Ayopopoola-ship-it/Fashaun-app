@@ -4,11 +4,17 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../providers/AuthProvider';
+import { isAdminUser } from '../services/adminAccess';
+import { AdminBrandReviewDetailScreen } from '../screens/AdminBrandReviewDetailScreen';
+import { AdminReviewScreen } from '../screens/AdminReviewScreen';
 import { BrandPageScreen } from '../screens/BrandPageScreen';
+import { BrandRequestDetailsScreen } from '../screens/BrandRequestDetailsScreen';
+import { BrandRequestsScreen } from '../screens/BrandRequestsScreen';
 import { BrandSelectionScreen } from '../screens/BrandSelectionScreen';
 import { BuyWebViewScreen } from '../screens/BuyWebViewScreen';
 import { CartScreen } from '../screens/CartScreen';
 import { HomeFeedScreen } from '../screens/HomeFeedScreen';
+import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { PriceDropScreen } from '../screens/PriceDropScreen';
 import { ProductDetailsScreen } from '../screens/ProductDetailsScreen';
@@ -21,6 +27,11 @@ export type RootStackParamList = {
   MainTabs: undefined;
   SideMenu: undefined;
   History: undefined;
+  RequestBrands: undefined;
+  Leaderboard: undefined;
+  BrandRequestDetails: { requestId: string };
+  AdminReview: undefined;
+  AdminBrandReviewDetail: { brandId: string };
   Onboarding: undefined;
   HomeFeed: undefined;
   BrandSelection: undefined;
@@ -106,7 +117,8 @@ function MainTabsNavigator() {
 }
 
 function SideMenuScreen({ navigation }: { navigation: any }) {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const isAdmin = isAdminUser(user?.email);
 
   return (
     <View style={styles.sideMenuContainer}>
@@ -114,7 +126,36 @@ function SideMenuScreen({ navigation }: { navigation: any }) {
         style={styles.sideMenuItem}
         onPress={() => {
           navigation.goBack();
-          navigation.navigate('MainTabs');
+          navigation.navigate('RequestBrands');
+        }}
+      >
+        <Text style={styles.sideMenuItemText}>Request Brand</Text>
+      </Pressable>
+      <Pressable
+        style={styles.sideMenuItem}
+        onPress={() => {
+          navigation.goBack();
+          navigation.navigate('Leaderboard');
+        }}
+      >
+        <Text style={styles.sideMenuItemText}>Leaderboard</Text>
+      </Pressable>
+      {isAdmin ? (
+        <Pressable
+          style={styles.sideMenuItem}
+          onPress={() => {
+            navigation.goBack();
+            navigation.navigate('AdminReview');
+          }}
+        >
+          <Text style={styles.sideMenuItemText}>Admin Review</Text>
+        </Pressable>
+      ) : null}
+      <Pressable
+        style={styles.sideMenuItem}
+        onPress={() => {
+          navigation.goBack();
+          navigation.navigate('MainTabs', { screen: 'Discovery' });
         }}
       >
         <Text style={styles.sideMenuItemText}>Home</Text>
@@ -159,6 +200,11 @@ export function AppNavigator() {
           headerLeft: () => <HeaderMenuButton navigation={navigation} />,
         })}
       />
+      <Stack.Screen name="RequestBrands" component={BrandRequestsScreen} options={{ title: 'Request Brand' }} />
+      <Stack.Screen name="Leaderboard" component={LeaderboardScreen} options={{ title: 'Leaderboard' }} />
+      <Stack.Screen name="BrandRequestDetails" component={BrandRequestDetailsScreen} options={{ title: 'Brand Request' }} />
+      <Stack.Screen name="AdminReview" component={AdminReviewScreen} options={{ title: 'Admin Review' }} />
+      <Stack.Screen name="AdminBrandReviewDetail" component={AdminBrandReviewDetailScreen} options={{ title: 'Review Brand' }} />
 
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ title: 'Welcome' }} />
       <Stack.Screen name="HomeFeed" component={HomeFeedScreen} options={{ title: 'Discovery' }} />

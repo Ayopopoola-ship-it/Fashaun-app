@@ -8,7 +8,15 @@ type AnalyticsEvent =
   | 'product_save'
   | 'swipe_right'
   | 'swipe_left'
-  | 'buy_clicked';
+  | 'buy_clicked'
+  | 'brand_request_submitted'
+  | 'brand_request_voted'
+  | 'brand_request_shared'
+  | 'brand_request_signup_cta_clicked'
+  | 'ingestion_started'
+  | 'ingestion_succeeded'
+  | 'ingestion_failed'
+  | 'requested_brand_went_live';
 
 let client: PostHog | null = null;
 

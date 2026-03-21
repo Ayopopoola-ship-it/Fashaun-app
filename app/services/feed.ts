@@ -34,14 +34,29 @@ export async function fetchHomeFeedPage(input: FetchHomeFeedPageInput): Promise<
     return [];
   }
 
+  const { data: liveBrands, error: liveBrandsError } = await supabase
+    .from('brands')
+    .select('id')
+    .in('id', brandIds)
+    .eq('status', 'live');
+
+  if (liveBrandsError) {
+    throw new Error(`Failed to fetch live brands for home feed: ${liveBrandsError.message}`);
+  }
+
+  const liveBrandIds = (liveBrands ?? []).map((row: { id: string }) => row.id);
+  if (liveBrandIds.length === 0) {
+    return [];
+  }
+
   const rangeStart = offset;
   const rangeEnd = offset + limit - 1;
 
   const { data: products, error: productsError } = await supabase
     .from('products')
     .select('id, brand_id, name, image_urls, price_amount, currency_code, created_at')
-    .in('brand_id', brandIds)
-    .eq('is_active', true)
+    .in('brand_id', liveBrandIds)
+    .eq('status', 'live')
     .eq('availability', true)
     .order('created_at', { ascending: false })
     .range(rangeStart, rangeEnd);
