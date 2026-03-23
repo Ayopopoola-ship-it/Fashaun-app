@@ -7,6 +7,8 @@ The goal is to remove the need for users to visit multiple fashion websites indi
 
 Fashaun is a discovery and orchestration layer for fashion commerce, not a payment processor or marketplace in V1.
 
+The customer-facing mobile app lives at the repo root. Internal brand ingestion and review now live in a separate `admin-web/` workspace that shares the same Supabase project.
+
 ---
 
 ## Founder
@@ -78,5 +80,6 @@ Users should be able to:
 ## Project Structure
 ```text
 Fashaun V1/
-  fashaun-mobile/     Expo mobile app
+  app/                Customer mobile app screens, navigation, and services
+  admin-web/          Internal web app for brand ingestion and review
   backend/            Node.js TypeScript scripts workspace

@@ -1,5 +1,4 @@
 export * from './analytics';
-export * from './brandIngestion';
 export * from './brandRequests';
 export * from './brandRequestUtils';
 export * from './brands';

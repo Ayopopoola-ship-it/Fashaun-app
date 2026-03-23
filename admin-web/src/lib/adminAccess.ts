@@ -1,5 +1,5 @@
 export function isAdminUser(email?: string | null): boolean {
-  const raw = process.env.EXPO_PUBLIC_ADMIN_EMAILS;
+  const raw = import.meta.env.VITE_ADMIN_EMAILS;
   if (!raw || !email) {
     return false;
   }

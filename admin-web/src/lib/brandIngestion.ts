@@ -1,8 +1,8 @@
 import { trackAnalyticsEvent } from './analytics';
 import { fetchBrandById } from './brands';
 import { classifyBrandSource, normalizeBrandName } from './brandRequestUtils';
-import { supabase } from './supabaseClient';
-import { Brand, BrandSourceType, IngestionStatus, Product } from '../types';
+import { supabase } from './supabase';
+import type { Brand, BrandSourceType, IngestionStatus, Product } from './types';
 
 const SHOPIFY_PAGE_LIMIT = 250;
 const SHOPIFY_TIMEOUT_MS = 15000;
@@ -160,15 +160,15 @@ function parseShopifyPrice(product: ShopifyProduct): number | null {
 }
 
 function extractShopifyImages(product: ShopifyProduct): string[] {
-  const urls = [
-    ...(product.images ?? []).map((image) => image?.src ?? ''),
-    product.image?.src ?? '',
-  ];
-
+  const urls = [...(product.images ?? []).map((image) => image?.src ?? ''), product.image?.src ?? ''];
   return uniqueStrings(urls);
 }
 
-function extractShopifyOptions(product: ShopifyProduct): { sizes: string[]; colors: string[]; variants: Record<string, unknown>[] } {
+function extractShopifyOptions(product: ShopifyProduct): {
+  sizes: string[];
+  colors: string[];
+  variants: Record<string, unknown>[];
+} {
   const sizes: string[] = [];
   const colors: string[] = [];
   const optionNames = new Map<number, string>();
@@ -285,12 +285,16 @@ async function fetchHtml(url: string, timeoutMs = GENERIC_SITE_TIMEOUT_MS): Prom
 function extractMetaContent(html: string, selectors: string[]): string | null {
   for (const selector of selectors) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const propertyMatch = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i'));
+    const propertyMatch = html.match(
+      new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i')
+    );
     if (propertyMatch?.[1]) {
       return propertyMatch[1].trim();
     }
 
-    const reversedMatch = html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["']`, 'i'));
+    const reversedMatch = html.match(
+      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["']`, 'i')
+    );
     if (reversedMatch?.[1]) {
       return reversedMatch[1].trim();
     }
@@ -937,10 +941,7 @@ export async function ingestBrandProducts(input: {
 }
 
 export async function fetchAdminBrandReviewItems(): Promise<AdminBrandReviewItem[]> {
-  const { data, error } = await supabase
-    .from('brands')
-    .select('*')
-    .order('updated_at', { ascending: false });
+  const { data, error } = await supabase.from('brands').select('*').order('updated_at', { ascending: false });
 
   if (error) {
     throw new Error(`Failed to fetch admin brand review items: ${error.message}`);
@@ -992,13 +993,16 @@ export async function fetchAdminBrandReviewDetail(brandId: string): Promise<Admi
   };
 }
 
-export async function updateAdminBrand(brandId: string, input: {
-  name: string;
-  domain: string;
-  instagramHandle?: string | null;
-  category?: string | null;
-  sourceUrl?: string | null;
-}): Promise<Brand> {
+export async function updateAdminBrand(
+  brandId: string,
+  input: {
+    name: string;
+    domain: string;
+    instagramHandle?: string | null;
+    category?: string | null;
+    sourceUrl?: string | null;
+  }
+): Promise<Brand> {
   const values: Partial<Brand> = {
     name: input.name.trim(),
     domain: normalizeDomain(input.domain),
@@ -1062,12 +1066,15 @@ export async function rejectProduct(productId: string): Promise<void> {
   }
 }
 
-export async function updateAdminProduct(productId: string, input: {
-  name: string;
-  priceAmount: number | null;
-  productUrl?: string | null;
-  category?: string | null;
-}): Promise<void> {
+export async function updateAdminProduct(
+  productId: string,
+  input: {
+    name: string;
+    priceAmount: number | null;
+    productUrl?: string | null;
+    category?: string | null;
+  }
+): Promise<void> {
   const { error } = await supabase
     .from('products')
     .update({

@@ -4,9 +4,6 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../providers/AuthProvider';
-import { isAdminUser } from '../services/adminAccess';
-import { AdminBrandReviewDetailScreen } from '../screens/AdminBrandReviewDetailScreen';
-import { AdminReviewScreen } from '../screens/AdminReviewScreen';
 import { BrandPageScreen } from '../screens/BrandPageScreen';
 import { BrandRequestDetailsScreen } from '../screens/BrandRequestDetailsScreen';
 import { BrandRequestsScreen } from '../screens/BrandRequestsScreen';
@@ -30,8 +27,6 @@ export type RootStackParamList = {
   RequestBrands: undefined;
   Leaderboard: undefined;
   BrandRequestDetails: { requestId: string };
-  AdminReview: undefined;
-  AdminBrandReviewDetail: { brandId: string };
   Onboarding: undefined;
   HomeFeed: undefined;
   BrandSelection: undefined;
@@ -117,8 +112,7 @@ function MainTabsNavigator() {
 }
 
 function SideMenuScreen({ navigation }: { navigation: any }) {
-  const { signOut, user } = useAuth();
-  const isAdmin = isAdminUser(user?.email);
+  const { signOut } = useAuth();
 
   return (
     <View style={styles.sideMenuContainer}>
@@ -140,17 +134,6 @@ function SideMenuScreen({ navigation }: { navigation: any }) {
       >
         <Text style={styles.sideMenuItemText}>Leaderboard</Text>
       </Pressable>
-      {isAdmin ? (
-        <Pressable
-          style={styles.sideMenuItem}
-          onPress={() => {
-            navigation.goBack();
-            navigation.navigate('AdminReview');
-          }}
-        >
-          <Text style={styles.sideMenuItemText}>Admin Review</Text>
-        </Pressable>
-      ) : null}
       <Pressable
         style={styles.sideMenuItem}
         onPress={() => {
@@ -203,9 +186,6 @@ export function AppNavigator() {
       <Stack.Screen name="RequestBrands" component={BrandRequestsScreen} options={{ title: 'Request Brand' }} />
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} options={{ title: 'Leaderboard' }} />
       <Stack.Screen name="BrandRequestDetails" component={BrandRequestDetailsScreen} options={{ title: 'Brand Request' }} />
-      <Stack.Screen name="AdminReview" component={AdminReviewScreen} options={{ title: 'Admin Review' }} />
-      <Stack.Screen name="AdminBrandReviewDetail" component={AdminBrandReviewDetailScreen} options={{ title: 'Review Brand' }} />
-
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ title: 'Welcome' }} />
       <Stack.Screen name="HomeFeed" component={HomeFeedScreen} options={{ title: 'Discovery' }} />
       <Stack.Screen name="BrandSelection" component={BrandSelectionScreen} options={{ title: 'Brands' }} />
